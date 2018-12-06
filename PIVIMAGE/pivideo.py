@@ -4,7 +4,7 @@
 		- Une video
 		- Une barre de bouton de navigation
 		- Le systeme de pointage
-		
+
 	Usage :
 		videos.append(Pivideo(self.window, app=self, datas_pos = 0))
 '''
@@ -17,7 +17,7 @@ except: # Python 2
 	import Tkinter as tkinter
 	import tkMessageBox
 	import tkFileDialog
-	
+
 import ttk
 import funcy
 import pathlib
@@ -28,21 +28,20 @@ from buttons import *
 from videocapture import *
 from marque import *
 
-	
+
 class Pivideo(tkinter.Frame, PiObject):
 	'''Un widget comprenant
 		- Une video (=canevas avec image qui change)
 		- Une barre de boutons (navigation images)
 	'''
 	nb_pivideo = 0 # Nb d'instances
-	
+
 	def __init__(self, parent, app, name = None, datas_pos=0):
 		'''Initialisation
 			app			:	parent
 			name
 			datas_pos	:	position des données recoltées dans le tableau de données
 		'''
-		print("Création Pivideo instance",self)
 		tkinter.Frame.__init__(self, parent)
 		self.app = app
 		self.datas_pos = datas_pos
@@ -74,7 +73,9 @@ class Pivideo(tkinter.Frame, PiObject):
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp début", command = self.bt_trim_start))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp fin", command = self.bt_trim_end))
 		self.button_barre.grid(sticky = 'nw', padx = 10, pady = 10)
-		
+
+	def __repr__(self):
+		return "PiVideo %s"%self.name
 	def init(self):
 		'''initialise ou réinitialise les variables
 		'''
@@ -87,7 +88,7 @@ class Pivideo(tkinter.Frame, PiObject):
 		self.photo = None
 		self.image = None
 		self.video = None
-		
+
 	def reinit(self):
 		'''réinitialise tous
 		'''
@@ -96,8 +97,8 @@ class Pivideo(tkinter.Frame, PiObject):
 		self.title.config(text=self.name)
 		self.canvas.delete("image")
 		self.progress.set(0)
-	
-	
+
+
 	def open_video(self, filename):
 		'''Ouvre un fichier video et affiche la première image
 		'''
@@ -117,8 +118,8 @@ class Pivideo(tkinter.Frame, PiObject):
 		except ValueError:
 			tkMessageBox.showerror("Ouvrir videos", "Impossible d'ouvrir le fichier.")
 			self.video = None
-		
-	
+
+
 	def update_video(self):
 		'''Met à jour l'affichage de la video (avec le frame suivant)
 		'''
@@ -136,7 +137,7 @@ class Pivideo(tkinter.Frame, PiObject):
 		else:
 			self.mode = "stop"
 			self.video.stop()
-	
+
 	def get_time(self, frame_no = None):
 		'''Renvoie la duree entre un frame_no et le début de la video.
 			Si frame_no est omis, le frame en cours est pris
@@ -145,45 +146,45 @@ class Pivideo(tkinter.Frame, PiObject):
 			return self.video.get_time(frame_no) - self.video.get_time(self.start_frame)
 		else:
 			return self.video.get_time(frame_no)
-			
+
 	def get_relative_time(self, frame_no =None):
 		''' renvoie la durée entre un frame_no et le début de la capture
 		'''
 		return self.get_time(frame_no) - self.offset
-		
+
 	def bt_open_video(self):
 		'''Ouvre une boite de dialogue pour selectionner fichier et ouvre la video
 		'''
 		file = tkFileDialog.askopenfilename(title = "Selectionner la vidéo à ouvrir")
 		if file:
 			self.open_video(file)
-	
+
 	def update_progress_bar(self):
 		'''Met à jour la barre de progression
 		'''
 		self.progress_bar.config(maximum = (self.end_frame or self.video.frame_count) - self.start_frame)
 		self.progress.set(self.video.get_frame_no() - self.start_frame)
-		
-	
+
+
 	def bt_pause(self):
 		''' Met en pause la video
 		'''
 		self.mode = "pause"
-	
+
 	def bt_play(self):
 		''' Play the video
 		'''
 		if self.video:
 			self.mode = "play"
 			self.update_video()
-	
+
 	def bt_image_plus(self):
 		'''Avance d'une image
 		'''
 		if self.video:
 			self.mode = "pause"
 			self.update_video()
-	
+
 	def bt_goto_start(self):
 		'''Stop la video et reviens au début
 		'''
@@ -195,8 +196,8 @@ class Pivideo(tkinter.Frame, PiObject):
 			self.video.goto_frame(self.start_frame - 1)
 			self.app.window.config(cursor="")
 		self.update_video()
-	
-	
+
+
 	def bt_trim_start(self):
 		'''Definit la positionn actuelle comme étant le début de la video
 		'''
@@ -206,7 +207,7 @@ class Pivideo(tkinter.Frame, PiObject):
 				frame_no = 0
 		self.start_frame = frame_no
 		self.update_progress_bar()
-	
+
 	def bt_trim_end(self):
 		'''Definit la positionn actuelle comme étant la fin de la video
 		'''
@@ -216,7 +217,7 @@ class Pivideo(tkinter.Frame, PiObject):
 				frame_no = None
 		self.end_frame = frame_no
 		self.update_progress_bar()
-	
+
 	def click_progress_bar(self, evt):
 		''' Gestionnaire d'evenement click sur progress_bar
 			Déplace la vidéo vers le point clické
@@ -226,7 +227,7 @@ class Pivideo(tkinter.Frame, PiObject):
 			self.video.goto_frame(int(self.start_frame + float(evt.x) / evt.widget.winfo_width() * ((self.end_frame or self.video.frame_count)-self.start_frame)))
 			self.app.window.config(cursor="")
 			self.update_video()
-	
+
 	def click_canvas(self, evt):
 		''' Gestionnaire d'evenement click sur progress_bar
 			Si mode enregistrement,
@@ -249,14 +250,14 @@ class Pivideo(tkinter.Frame, PiObject):
 			while not self.app.videos[self.app.capture].video:
 				self.app.capture +=1
 				self.app.capture %=len(self.app.videos)
-	
+
 	def delete_marques(self, frame_time = None, id = None):
 		'''Supprimer des marques
 			frame_time 		:		Si None		: supprime toutes les marques
 									Si valeur	: supprime 1 marque
 									Si list		: supprime la liste
-			id				:		numero d'item 
-		'''			
+			id				:		numero d'item
+		'''
 		if id:
 			frame_time = self.get_frame_time_marque(id)
 		if frame_time is None:
@@ -267,19 +268,19 @@ class Pivideo(tkinter.Frame, PiObject):
 			#self.canvas.delete(self.marques[frame])
 			self.marques.pop(frame)
 			self.app.datas.delete(frame,self.datas_pos)
-	
+
 	def get_frame_time_marque(self, id):
 		''' Renvoie le frame_time d'une marque selon son id
 		'''
 		for frame_time, marque in self.marques.iteritems():
 			if marque.id == id:
 				return frame_time
-	
+
 	def to_json(self):
 		''' Pour sérialiser (sauvegardes)
 		'''
 		return funcy.project(self.__dict__, ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame'])
-	
+
 	def load_json(self, state):
 		'''Load state into App object
 			qui contient  ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame']
@@ -295,5 +296,3 @@ class Pivideo(tkinter.Frame, PiObject):
 		self.end_frame = state['end_frame']
 		self.open_video(self.filename)
 		self.bt_goto_start()
-		
-		

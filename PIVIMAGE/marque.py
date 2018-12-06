@@ -14,13 +14,16 @@ class Marque(object):
 		self.x = x
 		self.y = y
 		self.id = parent.canvas.create_bitmap(x,y,bitmap = "@marque.xbm", tags = "marques", foreground = "blue")
-	
+
 	def __del__(self):
 		''' Destructeur
 		'''
 		self.parent.canvas.delete(self.id)
-	
+
 	def to_json(self):
 		''' Pour sérialiser (sauvegardes)
 		'''
 		return funcy.project(self.__dict__, ['x','y'])
+
+	def __repr__(self):
+		return	"Marque sur %s at (%s,%s) with id %s"%(self.parent, self.x,,self.y, self.id)
