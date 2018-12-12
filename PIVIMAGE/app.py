@@ -348,7 +348,7 @@ class App(object):
 		'''A propos
 		'''
 		tkMessageBox.showinfo("A propos de ", \
-				"PIVIMAGE version %s\n" + \
+				"PIVIMAGE version %s\n"%__version__  + \
 				"License : CeCILL version 2.1\n" + \
 				"https://github.com/fthome/PIVIMAGE" \
-				%__version__ )
+				)
