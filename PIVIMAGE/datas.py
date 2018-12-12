@@ -2,7 +2,7 @@
 '''
 	Un Frame tkinter
 		qui représente des données classées sous forme de tableau
-	
+
 	Usage :
 			datas = PiDatas(self.window,width=5,col_names = ["Temps (ms)","X1","Y1","X2","Y2"], height = height)
 			datas.add(frame_time, [x1,y1,x2,y2,...])
@@ -16,19 +16,19 @@ except:
 from scrframe import *
 from piencoder import *
 import funcy
-	
-class PiDatas(VerticalScrolledFrame): 
+
+class PiDatas(VerticalScrolledFrame):
 	'''Un tableau de données
 	'''
 	cell_format = {'relief' : 'groove', 'width' : 10}
-	def __init__(self, parent, width, col_names = [], height = None): 
+	def __init__(self, parent, width, col_names = [], height = None):
 		'''Initialisation
 			width		:	nb de colonnes (y compris l'index)
 			col_names	:	tableau des noms de colonnes
 		'''
 		print("Création PiDatas instance", self)
 		VerticalScrolledFrame.__init__(self, parent, height = height, relief = 'groove',borderwidth = 5)
-		self.numberColumns = width 
+		self.numberColumns = width
 		self.col_names = col_names
 		for i in range(self.numberColumns):
 			try:
@@ -38,12 +38,12 @@ class PiDatas(VerticalScrolledFrame):
 			label = tkinter.Label(self.interior, text=name, **PiDatas.cell_format)
 			label.grid(row = 0, column = i, padx = 0, pady = 0)
 		self.lines = {} # {no_frame:[cellTemps, cellX1, cellY1, cellX2, cellY2, ...], ...}
-		
+
 	def is_empty(self):
 		'''
 		'''
 		return not bool(self.lines)
-	
+
 	def add(self, frame_time, data):
 		'''Ajoute des données
 			frame_time		:	Index du tableau
@@ -55,15 +55,27 @@ class PiDatas(VerticalScrolledFrame):
 			cell = tkinter.Label(self.interior, text = str(frame_time),**PiDatas.cell_format)
 			self.lines[frame_time].append(cell)
 			cell.grid(row = len(self.lines)+1, column = 0, padx = 0, pady = 0)
-			for j in range(self.numberColumns-1): 
-				cell = tkinter.Label(self.interior, text = str(data[j]),**PiDatas.cell_format) 
+			for j in range(self.numberColumns-1):
+				if isinstance(data[j],int):
+					text = str(data[j])
+				elif isinstance(data[j],float):
+					text = "%.1f"%data[j]
+				else:
+					text = data[j]
+				cell = tkinter.Label(self.interior, text = text,**PiDatas.cell_format)
 				self.lines[frame_time].append(cell)
 				cell.grid(row = len(self.lines)+1, column = j+1, padx = 0, pady = 0)
 		else:
 			for j in range(len(data)):
 				if data[j]:
-					self.lines[frame_time][j+1].config(text=str(data[j]))
-	
+					if isinstance(data[j],int):
+						text = str(data[j])
+					elif isinstance(data[j],float):
+						text = "%.1f"%data[j]
+					else:
+						text = data[j]
+					self.lines[frame_time][j+1].config(text=text)
+
 	def delete(self, frame_time = None, video_index = None):
 		'''Delete une ou pls donnée
 				frame_time		:	Si None => tous
@@ -96,7 +108,7 @@ class PiDatas(VerticalScrolledFrame):
 						if cell:
 							cell.destroy()
 					self.lines.pop(frame)
-	
+
 	def to_json(self):
 		''' Pour sérialiser (sauvegardes)
 		'''
@@ -108,7 +120,7 @@ class PiDatas(VerticalScrolledFrame):
 			for cell in line[1:]:
 				state['lines'][frame_time].append(cell["text"])
 		return state
-	
+
 	def load_json(self, state):
 		'''Load state into App object
 			qui contient  ['numberColumns', 'col_names', 'lines'])
@@ -117,10 +129,10 @@ class PiDatas(VerticalScrolledFrame):
 		self.col_names = state['col_names']
 		for frame_time, line in state['lines'].iteritems():
 			self.add(frame_time, line)
-		
-	
+
+
 	def __str__(self):
-		''' les données au format text pour envoie clipboard par ex
+		''' les données au format text pour envoie clipboard
 		'''
 		txt = ""
 		for col_name in self.col_names:
@@ -130,5 +142,3 @@ class PiDatas(VerticalScrolledFrame):
 			for cell in self.lines[frame_time]:
 				txt += cell.cget('text') + "\t"
 		return txt
-	
-	

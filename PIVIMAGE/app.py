@@ -73,9 +73,9 @@ class App(object):
 		#LES VIDEOS
 		self.videos = []
 		self.videos.append(Pivideo(self.window, app=self, datas_pos = 0))
-		self.videos[0].grid( column = 1, row = 0, padx = 10, pady = 10)
+		self.videos[0].grid( column = 1, row = 0, padx = 10, pady = 5)
 		self.videos.append(Pivideo(self.window, app=self, datas_pos = 1))
-		self.videos[1].grid( column = 1, row =1, padx = 10, pady = 10)
+		self.videos[1].grid( column = 1, row =1, padx = 10, pady = 5)
 
 		#LES DONNES
 		self.window.update_idletasks()
@@ -151,9 +151,12 @@ class App(object):
 	def bt_ruler(self):
 		'''Demande de mesurer une distance pour calibrer
 		'''
-		print("Mesurer...")
-		self.stop_mode()
-		self.mode = 'mesure'
+		if self.mode == "mesure":
+			self.stop_mode()
+		else:
+			self.stop_mode()
+			self.button_mesure.config(relief = "sunken")
+			self.mode = 'mesure'
 
 	def bt_capture_datas(self):
 		'''Lance le mode capture de points
@@ -194,6 +197,10 @@ class App(object):
 				for marque in video.marques.itervalues():
 					video.canvas.tag_bind(marque.id, '<Button-1>', None)
 			self.button_rubber.config(relief = "raised")
+		elif self.mode == 'mesure':
+			self.button_mesure.config(relief = "raised")
+			for video in self.videos:
+				video.stop_mesure()
 		for video in self.videos:
 				video.canvas.config(cursor = "")
 		self.mode = None
@@ -344,4 +351,4 @@ class App(object):
 				"PIVIMAGE version %s\n" + \
 				"License : CeCILL version 2.1\n" + \
 				"https://github.com/fthome/PIVIMAGE" \
-				"%__version__ )
+				%__version__ )

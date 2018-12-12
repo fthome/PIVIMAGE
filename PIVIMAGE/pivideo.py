@@ -9,16 +9,16 @@
 		videos.append(Pivideo(self.window, app=self, datas_pos = 0))
 '''
 
-try: #Python 3
-	import tkinter
-	from tkinter import messagebox as tkMessageBox
-	from tkinter import filedialog as tkFileDialog
-	from tkinter import simpledialog as tkSimpleDialog
-except: # Python 2
+try: #Python 2
 	import Tkinter as tkinter
 	import tkMessageBox
 	import tkFileDialog
 	import tkSimpleDialog
+except: # Python 3
+	import tkinter
+	from tkinter import messagebox as tkMessageBox
+	from tkinter import filedialog as tkFileDialog
+	from tkinter import simpledialog as tkSimpleDialog
 
 import ttk
 import funcy
@@ -53,7 +53,6 @@ class Pivideo(tkinter.Frame, PiObject):
 		self.marques = {}
 		self.last_capture = None
 		self.line_mesure = None
-		self.ratio_px_mm = 1# Nb de mm par pixel
 		#TITRE
 		self.title = tkinter.Label(self, text=self.name)
 		self.title.grid()
@@ -78,6 +77,12 @@ class Pivideo(tkinter.Frame, PiObject):
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp début", command = self.bt_trim_start))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp fin", command = self.bt_trim_end))
 		self.button_barre.grid(sticky = 'nw', padx = 10, pady = 10)
+		#Echelle
+		self.scale = tkinter.StringVar()
+		self.set_ratio_px_mm(1)# Nb de mm par pixel
+		self.scale_label = tkinter.Label(self, textvariable = self.scale)
+		self.scale_label.grid()
+
 
 	def __repr__(self):
 		return "PiVideo %s"%self.name
@@ -247,7 +252,7 @@ class Pivideo(tkinter.Frame, PiObject):
 		if self.app.capture != None and self.app.videos[self.app.capture] == self and self.video:
 			#Ajoute les données au tableau
 			frame_time = int(round(self.get_relative_time()))
-			self.app.datas.add(frame_time, [0,0]*self.datas_pos + [evt.x,evt.y])
+			self.app.datas.add(frame_time, [0,0]*self.datas_pos + [evt.x*self.ratio_px_mm,evt.y*self.ratio_px_mm])
 			#Ajoute une marques
 			self.marques[frame_time]=Marque(self, evt.x, evt.y)
 			self.last_capture = (evt.x, evt.y)
@@ -271,27 +276,27 @@ class Pivideo(tkinter.Frame, PiObject):
 				#TODO : faire bind sur echap pour annuler le mode
 			else:
 				#2nd point de la mesure
-				x0 = self.canvas.itemconfigure(self.line_mesure,'x0')
-				y0 = self.canvas.itemconfigure(self.line_mesure,'y0')
-				distance_px = ((x0-evt.x)**2 + (y0-evt.y)**2)**0.5
-				distance_mm = tkSimpleDialog.askfloat("Convertir des pixels en mm", "La distance mesurée est de %d pixels.\n Quelle est la distance réelle en mm?", minvalue = 0)
+				[x0,y0,x1,y1] = self.canvas.coords(self.line_mesure)
+				distance_px = ((x0-x1)**2 + (y0-y1)**2)**0.5
+				distance_mm = tkSimpleDialog.askfloat("Convertir des pixels en mm", "La distance mesurée est de %d pixels.\n Quelle est la distance réelle en mm?"%distance_px, minvalue = 0)
 				if distance_mm:
-					selmf.ratio_px_mm = distance_mm / distance_px
-				self.canvas.delete(self.line_mesure)
-				self.line_mesure = None
-				self.canvas.unbind('Motion')
+					self.set_ratio_px_mm( distance_mm / distance_px)
 				self.app.stop_mode()
 
-
-
-
+	def stop_mesure(self):
+		''' Sort du mode mesure
+		'''
+		self.canvas.unbind('<Motion>')
+		self.canvas.delete(self.line_mesure)
+		self.line_mesure = None
 
 	def on_motion_mesure(self, evt):
 		''' Pour le mode mesure, déplace la flèche selon la souris
 		'''
-		print(evt)
 		if self.line_mesure:
-			self.canvas.itemconfigure(self.line_mesure, x1=evt.x, y1=evt.y)
+			coords = self.canvas.coords(self.line_mesure)[0:2]
+			coords += [evt.x,evt.y]
+			self.canvas.coords(self.line_mesure, *coords)
 
 	def move_mouse_at_last_capture(self):
 		'''Déplace la souris à l'emplacement de la dernière capture
@@ -330,11 +335,11 @@ class Pivideo(tkinter.Frame, PiObject):
 	def to_json(self):
 		''' Pour sérialiser (sauvegardes)
 		'''
-		return funcy.project(self.__dict__, ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame'])
+		return funcy.project(self.__dict__, ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame', 'ratio_px_mm'])
 
 	def load_json(self, state):
 		'''Load state into App object
-			qui contient  ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame']
+			qui contient  ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame', 'ratio_px_mm']
 		'''
 		self.datas_pos = state['datas_pos']
 		self.name = state['name']
@@ -345,5 +350,12 @@ class Pivideo(tkinter.Frame, PiObject):
 		self.start_frame = state['start_frame']
 		self.offset = state['offset']
 		self.end_frame = state['end_frame']
+		self.set_ratio_px_mm(state['ratio_px_mm'])
 		self.open_video(self.filename)
 		self.bt_goto_start()
+
+	def set_ratio_px_mm(self, ratio_px_mm):
+		'''Update the scale label
+		'''
+		self.ratio_px_mm = ratio_px_mm
+		self.scale.set("Echelle : 1 pixel = %f mm"%(self.ratio_px_mm))
