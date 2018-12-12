@@ -13,10 +13,12 @@ try: #Python 3
 	import tkinter
 	from tkinter import messagebox as tkMessageBox
 	from tkinter import filedialog as tkFileDialog
+	from tkinter import simpledialog as tkSimpleDialog
 except: # Python 2
 	import Tkinter as tkinter
 	import tkMessageBox
 	import tkFileDialog
+	import tkSimpleDialog
 
 import ttk
 import funcy
@@ -49,6 +51,9 @@ class Pivideo(tkinter.Frame, PiObject):
 		self.init()
 		self.name = name or self.name
 		self.marques = {}
+		self.last_capture = None
+		self.line_mesure = None
+		self.ratio_px_mm = 1# Nb de mm par pixel
 		#TITRE
 		self.title = tkinter.Label(self, text=self.name)
 		self.title.grid()
@@ -115,7 +120,8 @@ class Pivideo(tkinter.Frame, PiObject):
 			for video in self.app.videos[1:]:
 				if video.video and self.app.videos[0].video.get_virtual_fps() > video.video.get_virtual_fps():
 					tkMessageBox.showwarning("Video","Attention, la video principale doit avoir le nombre d'images par secondes le plus petit de toutes les videos. Le mode capture risque d'être faussé. Inversez les videos.")
-		except ValueError:
+		except ValueError as e:
+			print(e)
 			tkMessageBox.showerror("Ouvrir videos", "Impossible d'ouvrir le fichier.")
 			self.video = None
 
@@ -223,16 +229,20 @@ class Pivideo(tkinter.Frame, PiObject):
 			Déplace la vidéo vers le point clické
 		'''
 		if self.video:
-			self.app.window.config(cursor="wait")
+			self.progress_bar.config(cursor="wait")
 			self.video.goto_frame(int(self.start_frame + float(evt.x) / evt.widget.winfo_width() * ((self.end_frame or self.video.frame_count)-self.start_frame)))
 			self.app.window.config(cursor="")
 			self.update_video()
+			self.progress_bar.config(cursor="")
 
 	def click_canvas(self, evt):
-		''' Gestionnaire d'evenement click sur progress_bar
+		''' Gestionnaire d'evenement click sur la video
 			Si mode enregistrement,
 				- enregistre la position du point
 				- trace un point
+			Si mode mesure,
+				-
+				-
 		'''
 		if self.app.capture != None and self.app.videos[self.app.capture] == self and self.video:
 			#Ajoute les données au tableau
@@ -240,6 +250,7 @@ class Pivideo(tkinter.Frame, PiObject):
 			self.app.datas.add(frame_time, [0,0]*self.datas_pos + [evt.x,evt.y])
 			#Ajoute une marques
 			self.marques[frame_time]=Marque(self, evt.x, evt.y)
+			self.last_capture = (evt.x, evt.y)
 			# Avance d'un frame (dans le fps de la video maitre)
 			if self.datas_pos != 0: # Si pas video maitre : on avance jusque la frame précédente correspondant au temps de la video 0
 				self.video.goto_time(self.app.videos[0].get_relative_time() + self.offset + ( self.video.get_time(self.start_frame) if self.start_frame else 0) - 1000.0 / self.video.get_virtual_fps())
@@ -250,6 +261,45 @@ class Pivideo(tkinter.Frame, PiObject):
 			while not self.app.videos[self.app.capture].video:
 				self.app.capture +=1
 				self.app.capture %=len(self.app.videos)
+			self.canvas.config(cursor = "")
+			self.app.videos[self.app.capture].move_mouse_at_last_capture()
+		if self.app.mode == 'mesure':
+			if not self.line_mesure:
+				#1er point de la mesure
+				self.line_mesure = self.canvas.create_line(evt.x, evt.y,evt.x+1,evt.y+1, arrow = 'both')
+				self.canvas.bind('<Motion>', self.on_motion_mesure)
+				#TODO : faire bind sur echap pour annuler le mode
+			else:
+				#2nd point de la mesure
+				x0 = self.canvas.itemconfigure(self.line_mesure,'x0')
+				y0 = self.canvas.itemconfigure(self.line_mesure,'y0')
+				distance_px = ((x0-evt.x)**2 + (y0-evt.y)**2)**0.5
+				distance_mm = tkSimpleDialog.askfloat("Convertir des pixels en mm", "La distance mesurée est de %d pixels.\n Quelle est la distance réelle en mm?", minvalue = 0)
+				if distance_mm:
+					selmf.ratio_px_mm = distance_mm / distance_px
+				self.canvas.delete(self.line_mesure)
+				self.line_mesure = None
+				self.canvas.unbind('Motion')
+				self.app.stop_mode()
+
+
+
+
+
+	def on_motion_mesure(self, evt):
+		''' Pour le mode mesure, déplace la flèche selon la souris
+		'''
+		print(evt)
+		if self.line_mesure:
+			self.canvas.itemconfigure(self.line_mesure, x1=evt.x, y1=evt.y)
+
+	def move_mouse_at_last_capture(self):
+		'''Déplace la souris à l'emplacement de la dernière capture
+		et change le curseur en "main"
+		'''
+		if self.last_capture:
+			self.canvas.event_generate('<Motion>', warp=True, x=self.last_capture[0], y=self.last_capture[1])
+		self.canvas.config(cursor = "tcross")
 
 	def delete_marques(self, frame_time = None, id = None):
 		'''Supprimer des marques
@@ -268,6 +318,7 @@ class Pivideo(tkinter.Frame, PiObject):
 			#self.canvas.delete(self.marques[frame])
 			self.marques.pop(frame)
 			self.app.datas.delete(frame,self.datas_pos)
+		self.last_capture = None
 
 	def get_frame_time_marque(self, id):
 		''' Renvoie le frame_time d'une marque selon son id

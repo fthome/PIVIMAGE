@@ -26,4 +26,4 @@ class Marque(object):
 		return funcy.project(self.__dict__, ['x','y'])
 
 	def __repr__(self):
-		return	"Marque sur %s at (%s,%s) with id %s"%(self.parent, self.x,,self.y, self.id)
+		return	"Marque sur %s at (%s,%s) with id %s"%(self.parent, self.x,self.y, self.id)

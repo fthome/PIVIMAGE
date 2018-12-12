@@ -3,7 +3,7 @@
 '''
 	Base sur opencv2,
 	Une video que l'on lit image par image
-	
+
 	Usage:
 			video = PiVideoCapture(filename)
 			ret, frame = video.get_frame()
@@ -17,15 +17,16 @@ class PiVideoCapture:
 	''' Une video
 	'''
 	props = ["CAP_PROP_POS_MSEC", "CAP_PROP_POS_FRAMES", "CAP_PROP_POS_AVI_RATIO", "CAP_PROP_FORMAT", "CAP_PROP_MODE"]
-	
+
 	def __init__(self, video_source=0):
 		print("Création PivideoCapture instance", self)
 		self.video_source = video_source
 		self.frames = {}
+		self.vid = None
 		self.open()
 		self.calc_real_fps()
-		
-		
+
+
 	def open(self):
 		'''Open the video source
 		'''
@@ -41,10 +42,10 @@ class PiVideoCapture:
 		self.frame_count = self.vid.get(cv2.CAP_PROP_FRAME_COUNT)
 		print("%s Opened. Size : (%s,%s) - FPS : %s - Codec : %s - Nb of frames : %s"%(self.video_source, self.width, self.height, self.fps, self.fourcc, self.frame_count))
 		self.virtual_frame_no = 0
-		
+
 	 # Release the video source when the object is destroyed
 	def __del__(self):
-		if self.vid.isOpened():
+		if self.vid and self.vid.isOpened():
 			 self.vid.release()
 
 	def __getstate__(self):
@@ -55,7 +56,7 @@ class PiVideoCapture:
 		'''Pour désérialiser
 		'''
 		print("videocapture.__set_state__() : %s"%state)
-	
+
 	def __str__(self):
 		'''Infos sur la video
 		'''
@@ -67,7 +68,7 @@ class PiVideoCapture:
 		repr += u"FPS reél (images distinctes) : %s\n"%self.get_virtual_fps()
 		repr += u"Durée : %s secondes\n"% (int(round(self.frame_count/self.fps)))
 		return repr
-	
+
 	def get_frame(self):
 		''' Lit un frame nouveau (et pas le suivant si duplication) et renvoie (ret, frame) ou ret = true si ok
 		'''
@@ -91,7 +92,7 @@ class PiVideoCapture:
 				return (ret, None)
 		else:
 			return (False, None)
-			
+
 	def read_frame(self):
 		''' Lit un frame nouveau et renvoie true si ok
 		'''
@@ -101,7 +102,7 @@ class PiVideoCapture:
 			return ret
 		else:
 			return False
-			
+
 	def get_props(self):
 		'''renvoie un dict avec les propriétés du frame en cours
 		'''
@@ -109,7 +110,7 @@ class PiVideoCapture:
 		for prop in self.props:
 			frame_props[prop]=self.vid.get(getattr(cv2,prop))
 		return frame_props
-	
+
 	def get_frame_no(self):
 		'''renvoie ne n° de frame actif
 		'''
@@ -117,25 +118,25 @@ class PiVideoCapture:
 			return self.get_props()["CAP_PROP_POS_FRAMES"]
 		except:
 			return 0
-			
+
 	def get_virtual_frame_no(self, frame_no = None):
 		'''Renvoie le n° virtuel (images disctinctes) de frame actif ou celui correspondant au paramètre
 		'''
 		if frame_no is None:
 			frame_no = self.get_frame_no()
 		return self.frames[frame_no]
-	
+
 	def get_time(self, frame_no = None):
 		'''Renvoie le temps entre le début de la video et le frame actuel ou passé en param
 			en ms
 		'''
 		return 1000*self.get_virtual_frame_no(frame_no) / self.get_virtual_fps()
-	
+
 	def get_virtual_fps(self):
 		'''Renvoie le FPS réel (images dupliquées déduites)
 		'''
 		return self.fps / self.ratio_fps
-		
+
 	def calc_real_fps(self):
 		'''Calcul le ratio du nombre d'images / le nombre d'images distinctes
 			Sur un échantillons de 10 images (9 intervales)
@@ -144,13 +145,13 @@ class PiVideoCapture:
 			self.get_frame()
 		self.stop()
 		self.ratio_fps = int(round(max(self.frames)/9.0))
-	
+
 	def stop(self):
 		'''Stop la video et reviens au début
 		'''
 		self.vid.release()
 		self.open()
-		
+
 	def goto_frame(self, frame_no):
 		'''Va au frame n° frame_no
 			Si besoin referme le fichier et lit chaque frame jusqu'au bout
@@ -160,11 +161,11 @@ class PiVideoCapture:
 		ret = True
 		while ret and self.get_frame_no()< frame_no:
 			ret = self.get_frame()
-	
+
 	def goto_time(self, t):
 		'''V au frame le plus proche du temps t
 			t		:	temps (millisecondes)
-		
+
 		'''
 		t = t - 1000.0 / self.get_virtual_fps() / 2
 		ret = True

@@ -1,0 +1,9 @@
+A partir d'une installation standard de python 2.7.17 pour windows 64bits
+
+Il a fallut rajouter
+
+pip install opencv-python
+pip install Pillow
+pip install clipboard
+pip install funcy
+pip install pathlib
