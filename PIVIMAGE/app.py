@@ -340,4 +340,8 @@ class App(object):
 	def menu_about(self):
 		'''A propos
 		'''
-		tkMessageBox.showinfo("A propos de ", "PIVIMAGE version %s"%__version__)
+		tkMessageBox.showinfo("A propos de ", \
+				"PIVIMAGE version %s\n" + \
+				"License : CeCILL version 2.1\n" + \
+				"https://github.com/fthome/PIVIMAGE" \
+				"%__version__ )
