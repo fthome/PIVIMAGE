@@ -23,9 +23,9 @@ https://github.com/fthome/PIVIMAGE/releases
 
 Juste
 * télécharger pivimage.exe
-* executer le
+* executez-le
 
-(ça fait un gros fichier un peu lourd à ouvrir, mais l'intasllation est fortement simplifiée!)
+(ça fait un gros fichier un peu lourd à ouvrir, mais l'installation est fortement simplifiée!)
 
 ### A partir des sources
 
