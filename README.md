@@ -23,11 +23,11 @@ https://github.com/fthome/PIVIMAGE/releases
 
 Juste
 * télécharger pivimage.exe
-* executer le
+* executez-le
 
-(ça fait un gros fichier un peu lourd à ouvrir, mais l'intasllation est fortement simplifiée!)
+(ça fait un gros fichier un peu lourd à ouvrir, mais l'installation est fortement simplifiée!)
 
-### A partir des sources
+### À partir des sources
 
 #### Prérequis
 
@@ -37,6 +37,6 @@ Python 2.7 ou 3 (non testé)
 
 Cloner le projet, installer les dépendances (avec pip)
 
-#### Execution
+#### Exécution
 
 python pivimage.py
