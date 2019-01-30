@@ -13,7 +13,9 @@
 import cv2
 import funcy
 
-class PiVideoCapture:
+
+
+class PiVideoCapture(object):
 	''' Une video
 	'''
 	props = ["CAP_PROP_POS_MSEC", "CAP_PROP_POS_FRAMES", "CAP_PROP_POS_AVI_RATIO", "CAP_PROP_FORMAT", "CAP_PROP_MODE"]
@@ -30,8 +32,12 @@ class PiVideoCapture:
 	def open(self):
 		'''Open the video source
 		'''
-		self.vid = cv2.VideoCapture(self.video_source)
-		if not self.vid.isOpened():
+		#print("Open video %s"%self.video_source)
+		try:
+			self.vid = cv2.VideoCapture(self.video_source)
+		except:
+				pass
+		if not self.vid or not self.vid.isOpened():
 			raise ValueError("Unable to open video source", self.video_source)
 		self.last_frame = None
 		 # Get video source width and height and more

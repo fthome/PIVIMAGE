@@ -24,14 +24,15 @@ import ttk
 import funcy
 import pathlib
 import PIL.Image, PIL.ImageTk
+import sys
 
-from piobject import *
+#from piobject import * #Pourquoi PiObject TODO
 from buttons import *
 from videocapture import *
 from marque import *
 
 
-class Pivideo(tkinter.Frame, PiObject):
+class Pivideo(tkinter.Frame):#, PiObject): #Pourquoi PiObject TODO
 	'''Un widget comprenant
 		- Une video (=canevas avec image qui change)
 		- Une barre de boutons (navigation images)
@@ -126,10 +127,9 @@ class Pivideo(tkinter.Frame, PiObject):
 				if video.video and self.app.videos[0].video.get_virtual_fps() > video.video.get_virtual_fps():
 					tkMessageBox.showwarning("Video","Attention, la video principale doit avoir le nombre d'images par secondes le plus petit de toutes les videos. Le mode capture risque d'être faussé. Inversez les videos.")
 		except ValueError as e:
-			print(e)
+			print(str(e))
 			tkMessageBox.showerror("Ouvrir videos", "Impossible d'ouvrir le fichier.")
 			self.video = None
-
 
 	def update_video(self):
 		'''Met à jour l'affichage de la video (avec le frame suivant)
@@ -166,7 +166,7 @@ class Pivideo(tkinter.Frame, PiObject):
 	def bt_open_video(self):
 		'''Ouvre une boite de dialogue pour selectionner fichier et ouvre la video
 		'''
-		file = tkFileDialog.askopenfilename(title = "Selectionner la vidéo à ouvrir")
+		file = tkFileDialog.askopenfilename(title = "Selectionner la vidéo à ouvrir").encode(sys.getfilesystemencoding())
 		if file:
 			self.open_video(file)
 
