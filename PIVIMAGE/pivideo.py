@@ -39,7 +39,7 @@ class Pivideo(tkinter.Frame):#, PiObject): #Pourquoi PiObject TODO
 	'''
 	nb_pivideo = 0 # Nb d'instances
 
-	def __init__(self, parent, app, name = None, datas_pos=0):
+	def __init__(self, parent, app, name = None, datas_pos=0, size = 0.25):
 		'''Initialisation
 			app			:	parent
 			name
@@ -58,8 +58,8 @@ class Pivideo(tkinter.Frame):#, PiObject): #Pourquoi PiObject TODO
 		self.title = tkinter.Label(self, text=self.name)
 		self.title.grid()
 		#VIDEO
-		width = self.winfo_screenwidth()*0.25
-		height = self.winfo_screenheight()*0.25
+		width = self.winfo_screenwidth()*size
+		height = self.winfo_screenheight()*size
 		self.canvas = tkinter.Canvas(self, width = width, height = height, borderwidth  = 5,relief = 'groove')
 		self.canvas.grid()
 		self.canvas.bind("<ButtonRelease-1>", self.click_canvas)

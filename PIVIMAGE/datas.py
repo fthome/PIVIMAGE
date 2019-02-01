@@ -20,7 +20,7 @@ import funcy
 class PiDatas(VerticalScrolledFrame):
 	'''Un tableau de données
 	'''
-	cell_format = {'relief' : 'groove', 'width' : 10}
+	cell_format = {'relief' : 'groove', 'width' : 6}
 	def __init__(self, parent, width, col_names = [], height = None):
 		'''Initialisation
 			width		:	nb de colonnes (y compris l'index)

@@ -59,7 +59,7 @@ class App(object):
 
 		#LES BOUTONS A GAUCHE
 		self.button_barre = PiButtonsBarre(self.window, borderwidth  = 2,relief = 'groove', direction = tkinter.VERTICAL)
-		self.button_barre.grid(column = 0)
+		self.button_barre.grid(column = 0, row = 0)
 		self.button_mesure = tkinter.Button(self.button_barre, text = "Mesure", command = self.bt_ruler)
 		self.button_barre.add(self.button_mesure)
 		self.button_capture = tkinter.Button(self.button_barre, text = "Mode Capture", command = self.bt_capture_datas)
@@ -72,19 +72,19 @@ class App(object):
 
 		#LES VIDEOS
 		self.videos = []
-		self.videos.append(Pivideo(self.window, app=self, datas_pos = 0))
-		self.videos[0].grid( column = 1, row = 0, padx = 10, pady = 5)
-		self.videos.append(Pivideo(self.window, app=self, datas_pos = 1))
-		self.videos[1].grid( column = 1, row =1, padx = 10, pady = 5)
+		self.videos.append(Pivideo(self.window, app=self, datas_pos = 0, size = 0.25))
+		self.videos[0].grid( column = 1, row = 0, rowspan = 2, sticky  = tkinter.N, padx = 10, pady = 5)
+		self.videos.append(Pivideo(self.window, app=self, datas_pos = 1, size = 0.5))
+		self.videos[1].grid( column = 2, row =0, rowspan = 2, sticky  = tkinter.N, padx = 10, pady = 5)
 
 		#LES DONNES
 		self.window.update_idletasks()
 		height = 0
 		for video in self.videos:
-			height += video.winfo_height()
+			height = max(height, video.winfo_height())
 		pady = self.videos[0].title.winfo_reqheight() + 10
-		self.datas = PiDatas(self.window,5,col_names = ["Temps (ms)","X1","Y1","X2","Y2"], height = height)
-		self.datas.grid(column=2, row = 0, padx = 10, pady = pady, rowspan = 2, sticky = 'nw')
+		self.datas = PiDatas(self.window,5,col_names = ["Tps(ms)","X1","Y1","X2","Y2"], height = height - 50)
+		self.datas.grid(column=0, row = 1, padx = 10, pady = pady, rowspan = 2, sticky = 'nw')
 
 		#LES MENUS
 		mainmenu = tkinter.Menu(self.window)
