@@ -143,14 +143,25 @@ class PiVideoCapture(object):
 		'''
 		return self.fps / self.ratio_fps
 
-	def calc_real_fps(self):
+	def calc_real_fps(self, sample = 10, max_images = 50):
 		'''Calcul le ratio du nombre d'images / le nombre d'images distinctes
-			Sur un échantillons de 10 images (9 intervales)
+			Principe : on cherche 10 images distinctes succesives avec le même nb d'image entre elles
 		'''
-		for i in range(10):
+		nb_images_distinctes_succesives = 0
+		ratio_fps = 0
+		while nb_images_distinctes_succesives <= sample and self.get_frame_no() < max_images:
+			last_virtual_frame_no = self.get_frame_no()
 			self.get_frame()
+			if ratio_fps == self.get_frame_no() - last_virtual_frame_no:
+				nb_images_distinctes_succesives+=1
+			else:
+				nb_images_distinctes_succesives = 0
+				ratio_fps = self.get_frame_no() - last_virtual_frame_no
 		self.stop()
-		self.ratio_fps = int(round(max(self.frames)/9.0))
+		if self.get_frame_no() < max_images:
+			self.ratio_fps = ratio_fps
+		else:
+			self.ratio_fps = self.get_frame_no() / self.virtual_frame_no
 
 	def stop(self):
 		'''Stop la video et reviens au début

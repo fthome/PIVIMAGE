@@ -320,7 +320,7 @@ class App(object):
 	def menu_quitter(self):
 		'''Quitter
 		'''
-		if tkMessageBox.askokcancel("Quitter PIVIMAGE", "Voullez vous vraiment quitter?"):
+		if tkMessageBox.askokcancel("Quitter PIVIMAGE", "Voulez vous vraiment quitter?"):
 			self.window.destroy()
 
 	def menu_copy_datas(self):
