@@ -66,7 +66,7 @@ class PiVideoCapture(object):
 	def __str__(self):
 		'''Infos sur la video
 		'''
-		repr = u"Fichier : %s\n"%self.video_source
+		repr = u"Fichier : %s\n"%self.video_source #TODO : pb unicod
 		repr += u"Dimensions : %s - %s pixels\n"%(self.width, self.height)
 		repr += u"Codec (fourcc) : %s\n"%self.fourcc
 		repr += u"FPS : %s\n"%self.fps

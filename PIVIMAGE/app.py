@@ -47,7 +47,7 @@ class App(object):
 	images_path = pathlib.Path("./PIVIMAGE/images")
 	vitesse_max = 15
 
-	def __init__(self, name="PIVIMAGE"):
+	def __init__(self, name="PIVIMAGE", path = None):
 		'''Initialisation
 			name		:	Nom de l'application
 		'''
@@ -56,6 +56,10 @@ class App(object):
 		self.name = name
 		self.init()
 		self.set_title()
+		if path:
+			self.path = path
+		else:
+			self.path = os.path.expanduser('~')
 
 		#LES BOUTONS A GAUCHE
 		self.button_barre = PiButtonsBarre(self.window, borderwidth  = 2,relief = 'groove', direction = tkinter.VERTICAL)
@@ -250,6 +254,7 @@ class App(object):
 				with open(file, 'r') as f:
 					self.load_json(json.loads(f.read()))
 					f.close()
+				self.path = pathlib.Path(file).parent
 
 	def menu_save_project(self):
 		'''Sauve projet
@@ -273,6 +278,7 @@ class App(object):
 		if file:
 			self.project_file = file
 			self.menu_save_project()
+			self.path = pathlib.Path(file).parent
 
 	def load_json(self, state):
 		'''Load state into App object
@@ -296,7 +302,7 @@ class App(object):
 		if self.project_file:
 			return pathlib.Path(self.project_file).name, pathlib.Path(self.project_file).path
 		else:
-			return "MonProjet.piv", os.path.expanduser('~')
+			return "MonProjet.piv", self.path
 
 	def is_started(self):
 		''' Renvoie True si le projet est débuté (existance d'au moins une video ouverte)

@@ -13,7 +13,10 @@ class Marque(object):
 		self.parent = parent
 		self.x = x
 		self.y = y
-		self.id = parent.canvas.create_bitmap(x,y,bitmap = "@marque.xbm", tags = "marques", foreground = "blue")
+		try:
+			self.id = parent.canvas.create_bitmap(x,y,bitmap = "@marque.xbm", tags = "marques", foreground = "blue")
+		except:
+			self.id = None
 
 	def __del__(self):
 		''' Destructeur

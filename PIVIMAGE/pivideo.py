@@ -166,9 +166,10 @@ class Pivideo(tkinter.Frame):#, PiObject): #Pourquoi PiObject TODO
 	def bt_open_video(self):
 		'''Ouvre une boite de dialogue pour selectionner fichier et ouvre la video
 		'''
-		file = tkFileDialog.askopenfilename(title = "Selectionner la vidéo à ouvrir").encode(sys.getfilesystemencoding())
+		file = tkFileDialog.askopenfilename(title = "Selectionner la vidéo à ouvrir",initialdir = self.app.path).encode(sys.getfilesystemencoding())
 		if file:
 			self.open_video(file)
+			self.app.path = pathlib.Path(file).parent
 
 	def update_progress_bar(self):
 		'''Met à jour la barre de progression
