@@ -75,11 +75,13 @@ class App(object):
 		self.button_barre.add(tkinter.Scale(self.button_barre, label = "Vitesse de lecture", from_ = 1, to_ = App.vitesse_max, resolution = 1, orient = 'horizontal', length = 150, variable = self.vitesse))
 
 		#LES VIDEOS
+		self.video_frame = tkinter.Frame(self.window, borderwidth  = 2,relief = 'groove')
+		self.video_frame.grid(column = 1, row = 0,rowspan = 2, sticky = tkinter.N)
 		self.videos = []
-		self.videos.append(Pivideo(self.window, app=self, datas_pos = 0, size = 0.25))
-		self.videos[0].grid( column = 1, row = 0, rowspan = 2, sticky  = tkinter.N, padx = 10, pady = 5)
-		self.videos.append(Pivideo(self.window, app=self, datas_pos = 1, size = 0.5))
-		self.videos[1].grid( column = 2, row =0, rowspan = 2, sticky  = tkinter.N, padx = 10, pady = 5)
+		self.videos.append(Pivideo(self.video_frame, app=self, datas_pos = 0, size = 0.75))
+		self.videos[0].grid( column = 0, row = 0, sticky  = tkinter.N, padx = 10, pady = 5)
+		#self.videos.append(Pivideo(self.window, app=self, datas_pos = 1, size = 0.5))
+		#self.videos[1].grid( column = 2, row =0, rowspan = 2, sticky  = tkinter.N, padx = 10, pady = 5)
 
 		#LES DONNES
 		self.window.update_idletasks()
@@ -108,8 +110,8 @@ class App(object):
 		mainmenu.add_cascade(label = "Edition", menu = menuEdition)
 
 		menuVideo = tkinter.Menu(mainmenu,tearoff =0)
-		menuVideo.add_command(label = "Ouvrir video 1", command = self.menu_open_video1)
-		menuVideo.add_command(label = "Ouvrir video 2", command = self.menu_open_video2)
+		menuVideo.add_command(label = "Ajout video...", command = self.menu_open_video)
+		#menuVideo.add_command(label = "Ouvrir video 2", command = self.menu_open_video2)
 		menuVideo.add_command(label = "Informations", command = self.menu_informations)
 		mainmenu.add_cascade(label = "Video", menu = menuVideo)
 
@@ -143,6 +145,31 @@ class App(object):
 			name = pathlib.Path(self.project_file).name
 		self.window.title(self.name + " - " + (name or "Nouveau projet"))
 
+	def add_video(self):
+		'''Add a new video and resize all of them
+		'''
+		nb_video = len(self.videos)+1
+		if nb_video ==1:
+			size = 0.75
+			nb_col = 1
+			nb_lig = 1
+		elif nb_video == 2:
+			size = 0.33
+			nb_col = 1
+			nb_lig = 2
+		elif nb_video in [3,4]:
+			size = 0.33
+			nb_col = 2
+			nb_lig = 2
+		else:
+			tkMessageBox.showerror("Ouvrir videos", "Impossible d'ajouter une 5ème video.")
+			return
+		print("Ajout video n%s. nb_col=%s,nb_lig=%s"%(nb_video, nb_col, nb_lig))
+		for video in self.videos:
+			video.set_size(size)
+		self.videos.append(Pivideo(self.video_frame, app=self, datas_pos = nb_video-1, size = size))
+		for i, video in enumerate(self.videos):
+			video.grid( column = i//nb_lig, row =i%nb_lig, sticky  = tkinter.N, padx = 10, pady = 5)
 
 	def _lecture(self):
 		'''Lecture des videos si en mode "play"
@@ -328,15 +355,15 @@ class App(object):
 		'''
 		clipboard.copy(str(self.datas))
 
-	def menu_open_video1(self):
-		'''Ouvre video1
+	def menu_open_video(self):
+		'''Ajoute une nouvelle video
 		'''
-		self.videos[0].bt_open_video()
+		self.add_video()
 
-	def menu_open_video2(self):
-		'''Ouvre video2
-		'''
-		self.videos[1].bt_open_video()
+	#def menu_open_video2(self):
+	#	'''Ouvre video2
+	#	'''
+	#	self.videos[1].bt_open_video()
 
 
 	def menu_informations(self):

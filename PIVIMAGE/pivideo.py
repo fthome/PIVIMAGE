@@ -32,7 +32,7 @@ from videocapture import *
 from marque import *
 
 
-class Pivideo(tkinter.Frame):#, PiObject): #Pourquoi PiObject TODO
+class Pivideo(tkinter.Frame):
 	'''Un widget comprenant
 		- Une video (=canevas avec image qui change)
 		- Une barre de boutons (navigation images)
@@ -54,18 +54,17 @@ class Pivideo(tkinter.Frame):#, PiObject): #Pourquoi PiObject TODO
 		self.marques = {}
 		self.last_capture = None
 		self.line_mesure = None
+		self.size = size
 		#TITRE
 		self.title = tkinter.Label(self, text=self.name)
 		self.title.grid()
 		#VIDEO
-		width = self.winfo_screenwidth()*size
-		height = self.winfo_screenheight()*size
-		self.canvas = tkinter.Canvas(self, width = width, height = height, borderwidth  = 5,relief = 'groove')
+		self.canvas = tkinter.Canvas(self, borderwidth  = 5,relief = 'groove')
 		self.canvas.grid()
 		self.canvas.bind("<ButtonRelease-1>", self.click_canvas)
 		#PROGRESS BAR
 		self.progress = tkinter.IntVar()
-		self.progress_bar=ttk.Progressbar(self, length = width, orient = tkinter.HORIZONTAL, mode = "determinate", variable = self.progress)
+		self.progress_bar=ttk.Progressbar(self, orient = tkinter.HORIZONTAL, mode = "determinate", variable = self.progress)
 		self.progress_bar.grid()
 		self.progress_bar.bind('<ButtonRelease-1>',self.click_progress_bar)
 		#BARRE DE BUTTONS
@@ -83,10 +82,18 @@ class Pivideo(tkinter.Frame):#, PiObject): #Pourquoi PiObject TODO
 		self.set_ratio_px_mm(1)# Nb de mm par pixel
 		self.scale_label = tkinter.Label(self, textvariable = self.scale)
 		self.scale_label.grid()
+		self.set_size(size)
 
+	def set_size(self, size):
+		'''Resize the widget
+		'''
+		self.canvas.config(width=self.winfo_screenwidth()*size, height = self.winfo_screenheight()*size)
+		self.progress_bar.config(length = self.winfo_screenwidth()*size)
+		self.size = size
 
 	def __repr__(self):
 		return "PiVideo %s"%self.name
+
 	def init(self):
 		'''initialise ou réinitialise les variables
 		'''
