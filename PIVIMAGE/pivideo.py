@@ -1,4 +1,5 @@
-# -*-coding:Utf-8 -*
+# coding: utf8
+from __future__ import unicode_literals
 '''
 	Frame tkinter :
 		- Une video
@@ -25,6 +26,7 @@ import funcy
 import pathlib
 import PIL.Image, PIL.ImageTk
 import sys
+import math
 
 #from piobject import * #Pourquoi PiObject TODO
 from buttons import *
@@ -38,6 +40,7 @@ class Pivideo(tkinter.Frame):
 		- Une barre de boutons (navigation images)
 	'''
 	nb_pivideo = 0 # Nb d'instances
+	types_coordonnes = ["Cartesien","Polaire"]
 
 	def __init__(self, parent, app, name = None, datas_pos=0, size = 0.25):
 		'''Initialisation
@@ -78,6 +81,12 @@ class Pivideo(tkinter.Frame):
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp fin", command = self.bt_trim_end))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Fermer", command = self.bt_close_video))
 		self.button_barre.grid(sticky = 'nw', padx = 10, pady = 10)
+		self.coordonnes = tkinter.StringVar(value=Pivideo.types_coordonnes[0])
+		for coordonnes in Pivideo.types_coordonnes:
+			self.button_barre.add(tkinter.Radiobutton(self.button_barre, variable = self.coordonnes, text=coordonnes,value = coordonnes, command = self.on_coordonnes_change))
+		self.centre = None
+		self.centre_lines = None
+
 		#Echelle
 		self.scale = tkinter.StringVar()
 		self.set_ratio_px_mm(1)# Nb de mm par pixel
@@ -151,6 +160,10 @@ class Pivideo(tkinter.Frame):
 			try:
 				self.canvas.tag_lower("image","marques")
 			except: # Si pas encore de marques
+				pass
+			try:
+				self.canvas.tag_lower("image","coordonnes")
+			except: # Si pas de centre
 				pass
 			self.update_progress_bar()
 		else:
@@ -263,10 +276,11 @@ class Pivideo(tkinter.Frame):
 				-
 				-
 		'''
+		# MODE CAPTURE
 		if self.app.capture != None and self.app.videos[self.app.capture] == self and self.video:
 			#Ajoute les données au tableau
 			frame_time = int(round(self.get_relative_time()))
-			self.app.datas.add(frame_time, [0,0]*self.datas_pos + [evt.x*self.ratio_px_mm,evt.y*self.ratio_px_mm])
+			self.app.datas.add(frame_time, [0,0]*self.datas_pos + self.get_coordonnes(evt))
 			#Ajoute une marques
 			self.marques[frame_time]=Marque(self, evt.x, evt.y)
 			self.last_capture = (evt.x, evt.y)
@@ -282,6 +296,7 @@ class Pivideo(tkinter.Frame):
 				self.app.capture %=len(self.app.videos)
 			self.canvas.config(cursor = "")
 			self.app.videos[self.app.capture].move_mouse_at_last_capture()
+		# MODE MESURE
 		if self.app.mode == 'mesure':
 			if not self.line_mesure:
 				#1er point de la mesure
@@ -296,6 +311,17 @@ class Pivideo(tkinter.Frame):
 				if distance_mm:
 					self.set_ratio_px_mm( distance_mm / distance_px)
 				self.app.stop_mode()
+		#MODE SELECTION CENTRE COORDONNES POLAIRE
+		if self.app.mode == 'centre' and self.coordonnes.get() == Pivideo.types_coordonnes[1]:
+			self.centre = (evt.x, evt.y)
+			self.centre_lines=[]
+			self.centre_lines.append(self.canvas.create_line(evt.x,0,evt.x,self.canvas.winfo_reqheight(),tags = "coordonnes"))
+			self.centre_lines.append(self.canvas.create_line(0,evt.y,self.canvas.winfo_reqwidth(),evt.y,tags = "coordonnes"))
+			self.app.init_datas()
+			self.app.stop_mode()
+			self.canvas.config(cursor = "")
+
+
 
 	def stop_mesure(self):
 		''' Sort du mode mesure
@@ -373,3 +399,40 @@ class Pivideo(tkinter.Frame):
 		'''
 		self.ratio_px_mm = ratio_px_mm
 		self.scale.set("Echelle : 1 pixel = %f mm"%(self.ratio_px_mm))
+
+	def on_coordonnes_change(self):
+		'''Au changement de coordonnés (cartesien - polaire)
+		'''
+		if self.coordonnes.get() == Pivideo.types_coordonnes[1]: # Si Polaire
+			if tkMessageBox.askokcancel("Coordonnées polaires", "Pointer le centre du système de coordonnées. Attention les captures précédentes seront effacées."):
+				self.app.stop_mode()
+				self.app.mode = 'centre'
+				self.canvas.config(cursor = "crosshair ")
+			else:
+				self.coordonnes.set(Pivideo.types_coordonnes[0])
+		else: # Si coordonnés cartesien
+			if self.app.datas.is_empty() or tkMessageBox.askokcancel("Coordonnées cartésiens", "Attention les captures précédentes seront effacées."):
+				self.centre = None
+				if self.centre_lines:
+					for line in self.centre_lines:
+						self.canvas.delete(line)
+					self.centre_lines = None
+				self.app.init_datas()
+
+	def get_col_names(self):
+		'''Renvoie un tuple de 2 composé du nom des colonnes de données
+		'''
+		if self.coordonnes.get()==Pivideo.types_coordonnes[1]: # Si Polaire
+			return "R", "A"
+		else:
+			return "X", "Y"
+
+	def get_coordonnes(self, evt):
+		''' Retourne une list [x,y] ou [r,angle] mis à l'echele
+		'''
+		if self.coordonnes.get() == Pivideo.types_coordonnes[0]:#Cartesien
+			return [evt.x*self.ratio_px_mm,(self.canvas.winfo_reqheight()-evt.y)*self.ratio_px_mm]
+		else:
+			x = (evt.x - self.centre[0])*self.ratio_px_mm
+			y = -(evt.y - self.centre[1])*self.ratio_px_mm
+			return [(x*x+y*y)**0.5,math.atan2(y,x)*180/math.pi]

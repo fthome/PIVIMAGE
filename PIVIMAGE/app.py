@@ -1,4 +1,5 @@
-# -*-coding:Utf-8 -*
+# coding: utf8
+from __future__ import unicode_literals
 
 '''
 	Une interface graphique pour réaliser du pointage image par image
@@ -30,7 +31,7 @@ import pathlib, os
 #import jsonpickle
 import json
 import funcy
-import clipboard
+import pyperclip as clipboard
 
 from piencoder import *
 from pivideo import *
@@ -180,22 +181,23 @@ class App(object):
 	def init_datas(self):
 		''' Initialise (or re-init) datas
 		'''
+		for video in self.videos:
+			video.delete_marques()
 		try:
 			self.datas.destroy()
 		except:
 			pass
 		nb_video = len(self.videos)
 		self.window.update_idletasks()
-		height = 0
-		for video in self.videos:
-			height = max(height, video.winfo_height())
+		height = self.window.winfo_reqheight() - self.button_barre.winfo_reqheight() - 50
 		pady = self.videos[0].title.winfo_reqheight() + 10
 		col_names = ["Tps(ms)"]
 		for i in range(nb_video):
-			col_names.append("X"+str(i+1))
-			col_names.append("Y"+str(i+1))
-		self.datas = PiDatas(self.window,1+nb_video*2,col_names = col_names, height = height - 50)
-		self.datas.grid(column=0, row = 1, padx = 10, pady = pady, rowspan = 2, sticky = 'nw')
+			col1, col2 = self.videos[i].get_col_names()
+			col_names.append(col1+str(i+1))
+			col_names.append(col2+str(i+1))
+		self.datas = PiDatas(self.window,1+nb_video*2,col_names = col_names, height = height)
+		self.datas.grid(column=0, row = 1, padx = 10, pady = pady, rowspan = 2)#, sticky = 'nw')
 
 
 	def _lecture(self):

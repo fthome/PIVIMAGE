@@ -1,4 +1,5 @@
-# -*-coding:Utf-8 -*
+# coding: utf8
+from __future__ import unicode_literals
 '''
 	Un Frame tkinter
 		qui représente des données classées sous forme de tableau
@@ -134,11 +135,11 @@ class PiDatas(VerticalScrolledFrame):
 	def __str__(self):
 		''' les données au format text pour envoie clipboard
 		'''
-		txt = ""
+		txt = u''
 		for col_name in self.col_names:
-			txt += col_name + "\t"
+			txt += col_name + u"\t"
 		for frame_time in sorted(self.lines.iterkeys()):
-			txt += "\n"
+			txt += u"\n"
 			for cell in self.lines[frame_time]:
-				txt += cell.cget('text') + "\t"
+				txt += cell.cget('text') + u"\t"
 		return txt

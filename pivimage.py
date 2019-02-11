@@ -1,4 +1,5 @@
-# -*-coding:Utf-8 -*
+# coding: utf8
+from __future__ import unicode_literals
 
 '''
 	Une interface graphique pour réaliser du pointage image par image
