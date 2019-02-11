@@ -76,6 +76,7 @@ class Pivideo(tkinter.Frame):
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "début", command = self.bt_goto_start))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp début", command = self.bt_trim_start))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp fin", command = self.bt_trim_end))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Fermer", command = self.bt_close_video))
 		self.button_barre.grid(sticky = 'nw', padx = 10, pady = 10)
 		#Echelle
 		self.scale = tkinter.StringVar()
@@ -177,6 +178,11 @@ class Pivideo(tkinter.Frame):
 		if file:
 			self.open_video(file)
 			self.app.path = pathlib.Path(file).parent
+
+	def bt_close_video(self):
+		'''Ferme la video et redimensionne les autres videos
+		'''
+		self.app.close_video(self)
 
 	def update_progress_bar(self):
 		'''Met à jour la barre de progression
