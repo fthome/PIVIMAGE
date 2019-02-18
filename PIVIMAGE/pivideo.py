@@ -314,13 +314,10 @@ class Pivideo(tkinter.Frame):
 		#MODE SELECTION CENTRE COORDONNES POLAIRE
 		if self.app.mode == 'centre' and self.coordonnes.get() == Pivideo.types_coordonnes[1]:
 			self.centre = (evt.x, evt.y)
-			self.centre_lines=[]
-			self.centre_lines.append(self.canvas.create_line(evt.x,0,evt.x,self.canvas.winfo_reqheight(),tags = "coordonnes"))
-			self.centre_lines.append(self.canvas.create_line(0,evt.y,self.canvas.winfo_reqwidth(),evt.y,tags = "coordonnes"))
+			self.draw_coordonnes()
 			self.app.init_datas()
 			self.app.stop_mode()
 			self.canvas.config(cursor = "")
-
 
 
 	def stop_mesure(self):
@@ -375,7 +372,7 @@ class Pivideo(tkinter.Frame):
 	def to_json(self):
 		''' Pour sérialiser (sauvegardes)
 		'''
-		return funcy.project(self.__dict__, ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame', 'ratio_px_mm'])
+		return funcy.project(self.__dict__, ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame', 'ratio_px_mm','centre'])
 
 	def load_json(self, state):
 		'''Load state into App object
@@ -393,6 +390,13 @@ class Pivideo(tkinter.Frame):
 		self.set_ratio_px_mm(state['ratio_px_mm'])
 		self.open_video(self.filename)
 		self.bt_goto_start()
+		self.centre = state['centre']
+		self.centre_lines=[]
+		if self.centre:
+			self.coordonnes.set(Pivideo.types_coordonnes[1])
+			self.app.mode = 'centre'
+			self.draw_coordonnes()
+
 
 	def set_ratio_px_mm(self, ratio_px_mm):
 		'''Update the scale label
@@ -413,11 +417,18 @@ class Pivideo(tkinter.Frame):
 		else: # Si coordonnés cartesien
 			if self.app.datas.is_empty() or tkMessageBox.askokcancel("Coordonnées cartésiens", "Attention les captures précédentes seront effacées."):
 				self.centre = None
-				if self.centre_lines:
-					for line in self.centre_lines:
-						self.canvas.delete(line)
-					self.centre_lines = None
+				self.draw_coordonnes()
 				self.app.init_datas()
+
+	def draw_coordonnes(self):
+		'''Dessine (ou detruit) les lignes de coordonnes
+		'''
+		if self.centre_lines:
+			for line in self.centre_lines:
+				self.canvas.delete(line)
+		self.centre_lines=[]
+		self.centre_lines.append(self.canvas.create_line(self.centre[0],0,self.centre[0],self.canvas.winfo_reqheight(),tags = "coordonnes"))
+		self.centre_lines.append(self.canvas.create_line(0,self.centre[1],self.canvas.winfo_reqwidth(),self.centre[1],tags = "coordonnes"))
 
 	def get_col_names(self):
 		'''Renvoie un tuple de 2 composé du nom des colonnes de données

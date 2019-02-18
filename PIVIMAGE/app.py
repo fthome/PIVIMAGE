@@ -137,7 +137,7 @@ class App(object):
 			name = pathlib.Path(self.project_file).name
 		self.window.title(self.name + " - " + (name or "Nouveau projet"))
 
-	def add_video(self):
+	def add_video(self, init_datas = True): ## TODO: supprimer option init_datas
 		'''Add a new video and resize all of them
 		'''
 		nb_video = len(self.videos)+1
@@ -146,16 +146,18 @@ class App(object):
 		else:
 			self.videos.append(Pivideo(self.video_frame, app=self, datas_pos = nb_video-1))
 			self.resize_videos()
-			self.init_datas()
+			if init_datas:
+				self.init_datas()
 
-	def close_video(self, video):
+	def close_video(self, video, confirm = True, init_datas = True): ## TODO: supprimer option init_datas
 		'''Ferme une video
 		'''
-		if tkMessageBox.askokcancel("Fermer la vidéo","Voulez vous fermer la vidéo? S'il y a des données elles seront effacées."):
+		if (not confirm) or tkMessageBox.askokcancel("Fermer la vidéo","Voulez vous fermer la vidéo? S'il y a des données elles seront effacées."):
 			self.videos.remove(video)
 			video.destroy()
 			self.resize_videos()
-			self.init_datas()
+			if init_datas:
+				self.init_datas()
 
 	def resize_videos(self):
 		''' Redimensionne les videos (après un ajout ou une suppression)
@@ -181,6 +183,7 @@ class App(object):
 	def init_datas(self):
 		''' Initialise (or re-init) datas
 		'''
+		#TOTO : revoir cette resolution sans supprimer les données, mais juste redimensionner le tableau
 		for video in self.videos:
 			video.delete_marques()
 		try:
@@ -317,11 +320,8 @@ class App(object):
 		'''
 		if self.project_file:
 			print("save_project %s"%self.project_file)
-			#jsonpickle.set_preferred_backend('json')
-			#jsonpickle.set_encoder_options('json', indent = 4)
 			with open(self.project_file, 'w') as f:
-				#f.write(jsonpickle.encode(self))
-				f.write(json.dumps(self,cls = PiEncoder, indent = 4))
+				f.write(json.dumps(self, cls = PiEncoder, indent = 4))
 				f.close()
 		else:
 			self.menu_save_as_project()
@@ -341,8 +341,13 @@ class App(object):
 			qui contient  ['videos', 'datas']
 		'''
 		for i, video_state in enumerate(state['videos']):
+			if len(self.videos) <= i:
+				self.add_video(init_datas = False) #Si besoin, ajoute une video ## TODO: supprimer option init_datas
 			if video_state['filename']:
 				self.videos[i].load_json(video_state)
+		while len(self.videos) > len(state['videos']):
+			print("close %s"%self.videos[-1])
+			self.close_video(self.videos[-1], confirm = False, init_datas = False) #Si besoin, ferme video inutile ## TODO: supprimer option init_datas
 		self.datas.load_json(state['datas'])
 		self.init()
 		self.set_title()
@@ -356,7 +361,7 @@ class App(object):
 		'''Renvoie un tuple avec nom et path à sauvegarder ou ouvrir
 		'''
 		if self.project_file:
-			return pathlib.Path(self.project_file).name, pathlib.Path(self.project_file).path
+			return pathlib.Path(self.project_file).name, pathlib.Path(self.project_file).parent
 		else:
 			return "MonProjet.piv", self.path
 

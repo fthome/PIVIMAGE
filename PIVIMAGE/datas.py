@@ -45,6 +45,12 @@ class PiDatas(VerticalScrolledFrame):
 		'''
 		return not bool(self.lines)
 
+	def redim(self, width, col_names = []):
+		'''
+		'''
+		# TODO:
+		pass
+
 	def add(self, frame_time, data):
 		'''Ajoute des données
 			frame_time		:	Index du tableau
