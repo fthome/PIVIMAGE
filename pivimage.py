@@ -13,6 +13,8 @@ from __future__ import unicode_literals
 '''
 
 import PIVIMAGE
+from FUTIL.my_logging import *
+my_logging(console_level = DEBUG, logfile_level = INFO)
 
 App = PIVIMAGE.App()
 App.run()
