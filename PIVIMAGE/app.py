@@ -65,7 +65,7 @@ class App(object):
 		#LES BOUTONS A GAUCHE
 		self.button_barre = PiButtonsBarre(self.window, borderwidth  = 2,relief = 'groove', direction = tkinter.VERTICAL)
 		self.button_barre.grid(column = 0, row = 0)
-		self.button_mesure = tkinter.Button(self.button_barre, text = "Mesure", command = self.bt_ruler)
+		self.button_mesure = tkinter.Button(self.button_barre, text = "Echelle", command = self.bt_ruler)
 		self.button_barre.add(self.button_mesure)
 		self.button_capture = tkinter.Button(self.button_barre, text = "Mode Capture", command = self.bt_capture_datas)
 		self.button_barre.add(self.button_capture)
@@ -191,7 +191,7 @@ class App(object):
 		self.window.update_idletasks()
 		height = self.window.winfo_reqheight() - self.button_barre.winfo_reqheight() - 50
 		pady = self.videos[0].title.winfo_reqheight() + 10
-		col_names = ["Tps(ms)"]
+		col_names = ["t(ms)"]
 		for i in range(nb_video):
 			col1, col2 = self.videos[i].get_col_names()
 			col_names.append(col1+str(i+1))

@@ -73,10 +73,10 @@ class Pivideo(tkinter.Frame):
 		#BARRE DE BUTTONS
 		self.button_barre = PiButtonsBarre(self, borderwidth  = 2,relief = 'groove')
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Ouvrir", command = self.bt_open_video))
-		self.button_barre.add(tkinter.Button(self.button_barre, text = "pause", command = self.bt_pause))
-		self.button_barre.add(tkinter.Button(self.button_barre, text = "play", command = self.bt_play))
-		self.button_barre.add(tkinter.Button(self.button_barre, text = "image/image", command = self.bt_image_plus))
-		self.button_barre.add(tkinter.Button(self.button_barre, text = "début", command = self.bt_goto_start))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Pause", command = self.bt_pause))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Play", command = self.bt_play))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Image/image", command = self.bt_image_plus))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Début", command = self.bt_goto_start))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp début", command = self.bt_trim_start))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp fin", command = self.bt_trim_end))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Fermer", command = self.bt_close_video))
@@ -435,4 +435,8 @@ class Pivideo(tkinter.Frame):
 		else:
 			x = (evt.x - self.centre[0])*self.ratio_px_mm
 			y = -(evt.y - self.centre[1])*self.ratio_px_mm
-			return [(x*x+y*y)**0.5,math.atan2(y,x)*180/math.pi]
+			r = (x*x+y*y)**0.5
+			angle = math.atan2(y,x)*180/math.pi
+			if angle<0:
+				angle += 360
+			return [r , angle]
