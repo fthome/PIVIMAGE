@@ -17,20 +17,24 @@ except:
 from scrframe import *
 from piencoder import *
 import funcy
+import logging
 
 class PiDatas(VerticalScrolledFrame):
 	'''Un tableau de données
 	'''
 	cell_format = {'relief' : 'groove', 'width' : 6}
+	str_format = "%.2f"
+	separateur = "," #TODO paramètrage
+
 	def __init__(self, parent, width, col_names = [], height = None):
 		'''Initialisation
 			width		:	nb de colonnes (y compris l'index)
 			col_names	:	tableau des noms de colonnes
 		'''
-		print("Création PiDatas instance", self)
 		VerticalScrolledFrame.__init__(self, parent, height = height, relief = 'groove',borderwidth = 5)
 		self.numberColumns = width
 		self.col_names = col_names
+		self.entetes = []
 		for i in range(self.numberColumns):
 			try:
 				name = col_names[i]
@@ -38,12 +42,48 @@ class PiDatas(VerticalScrolledFrame):
 				name = str(i)
 			label = tkinter.Label(self.interior, text=name, **PiDatas.cell_format)
 			label.grid(row = 0, column = i, padx = 0, pady = 0)
+			self.entetes.append(label)
 		self.lines = {} # {no_frame:[cellTemps, cellX1, cellY1, cellX2, cellY2, ...], ...}
 
 	def is_empty(self):
 		'''
 		'''
 		return not bool(self.lines)
+
+	def remove_video(self, video_index):
+		'''Supprime une video
+		'''
+		#Suppression des entetes
+		for row in [video_index*2+2,video_index*2+1]:
+			self.entetes[row].destroy()
+			del self.entetes[row]
+		#Supression des Coordonnées
+		self.delete(None, video_index)
+
+	def add_video(self, col_names=[]):
+		'''Insert new rows for a video
+			return : video_index
+		'''
+		logging.debug("Add video with col_names = %s"%col_names)
+		for col in range(self.numberColumns, self.numberColumns + 2):
+			logging.debug("Colonne index : %s"%col)
+			try:
+				name = col_names[col-self.numberColumns]
+			except IndexError:
+				name = str(col)
+			self.col_names.append(name)
+			logging.debug("Colonne name : %s"%name)
+			label = tkinter.Label(self.interior, text=name, **PiDatas.cell_format)
+			label.grid(row = 0, column = col, padx = 0, pady = 0)
+			self.entetes.append(label)
+			for frame_no in self.lines:
+				logging.debug("Add capture for frame_no : %s"%frame_no)
+				cell = tkinter.Label(self.interior, text = "-",**PiDatas.cell_format)
+				label.grid(row = 0, column = col, padx = 0, pady = 0)
+				self.lines[frame_no].append(cell)
+		self.numberColumns +=2
+		return (self.numberColumns - 1)/2
+
 
 	def add(self, frame_time, data):
 		'''Ajoute des données
@@ -72,7 +112,7 @@ class PiDatas(VerticalScrolledFrame):
 					if isinstance(data[j],int):
 						text = str(data[j])
 					elif isinstance(data[j],float):
-						text = "%.1f"%data[j]
+						text = PiDatas.str_format%data[j]
 					else:
 						text = data[j]
 					self.lines[frame_time][j+1].config(text=text)
@@ -141,5 +181,29 @@ class PiDatas(VerticalScrolledFrame):
 		for frame_time in sorted(self.lines.iterkeys()):
 			txt += u"\n"
 			for cell in self.lines[frame_time]:
-				txt += cell.cget('text') + u"\t"
+				txt += str(cell.cget('text')).replace('.',self.separateur) + u"\t"
 		return txt
+
+	def change_datas(self, datas_pos, callback, col_names = []):
+		'''Transforme les données
+			datas_pos	:	0 pour la 1er video, 1 ...
+			col_names	:	["Xn", "Yn"] ou ["Rn", "An"]
+			callback	:	fonction avec deux arguments (X,Y), les données associés à datas_pos qui retourne un tuple
+		'''
+		logging.debug("Change datas n° %s with col_names = %s"%(datas_pos, col_names))
+		index1 = datas_pos*2+1
+		index2 = datas_pos*2+2
+		#entetes
+		try:
+			self.col_names[index1]=col_names[0]
+			self.entetes[index1].config(text=col_names[0])
+			self.col_names[index2]=col_names[1]
+			self.entetes[index2].config(text=col_names[1])
+		except IndexError:
+			pass
+		#Données
+		for frame_no in self.lines:
+			line = self.lines[frame_no]
+			val1, val2 = callback(float(line[index1].cget('text')),float(line[index2].cget('text')))
+			line[index1].config(text=PiDatas.str_format%val1)
+			line[index2].config(text=PiDatas.str_format%val2)

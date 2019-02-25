@@ -13,8 +13,8 @@ from __future__ import unicode_literals
 '''
 import cv2
 import funcy
-
-
+import sys
+import logging
 
 class PiVideoCapture(object):
 	''' Une video
@@ -22,7 +22,6 @@ class PiVideoCapture(object):
 	props = ["CAP_PROP_POS_MSEC", "CAP_PROP_POS_FRAMES", "CAP_PROP_POS_AVI_RATIO", "CAP_PROP_FORMAT", "CAP_PROP_MODE"]
 
 	def __init__(self, video_source=0):
-		print("Création PivideoCapture instance", self)
 		self.video_source = video_source
 		self.frames = {}
 		self.vid = None
@@ -33,9 +32,9 @@ class PiVideoCapture(object):
 	def open(self):
 		'''Open the video source
 		'''
-		#print("Open video %s"%self.video_source)
+		logging.info("Open video %s"%self.video_source)
 		try:
-			self.vid = cv2.VideoCapture(self.video_source)
+			self.vid = cv2.VideoCapture(self.video_source.encode(sys.getfilesystemencoding()))
 		except:
 				pass
 		if not self.vid or not self.vid.isOpened():
@@ -47,7 +46,7 @@ class PiVideoCapture(object):
 		self.fps = self.vid.get(cv2.CAP_PROP_FPS)
 		self.fourcc = self.vid.get(cv2.CAP_PROP_FOURCC)
 		self.frame_count = self.vid.get(cv2.CAP_PROP_FRAME_COUNT)
-		print("%s Opened. Size : (%s,%s) - FPS : %s - Codec : %s - Nb of frames : %s"%(self.video_source, self.width, self.height, self.fps, self.fourcc, self.frame_count))
+		logging.info("%s Opened. Size : (%s,%s) - FPS : %s - Codec : %s - Nb of frames : %s"%(self.video_source, self.width, self.height, self.fps, self.fourcc, self.frame_count))
 		self.virtual_frame_no = 0
 
 	 # Release the video source when the object is destroyed

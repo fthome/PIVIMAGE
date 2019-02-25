@@ -32,6 +32,7 @@ import pathlib, os
 import json
 import funcy
 import pyperclip as clipboard
+import logging
 
 from piencoder import *
 from pivideo import *
@@ -52,7 +53,7 @@ class App(object):
 		'''Initialisation
 			name		:	Nom de l'application
 		'''
-		print("Création App instance",self)
+		logging.debug("Création App instance %s"%self)
 		self.window = tkinter.Tk()
 		self.name = name
 		self.init()
@@ -83,7 +84,14 @@ class App(object):
 		self.videos[0].grid( column = 0, row = 0, sticky  = tkinter.N, padx = 10, pady = 5)
 
 		#LES DONNES
-		self.init_datas()
+		nb_video = len(self.videos)
+		self.window.update_idletasks()
+		height = self.window.winfo_reqheight() - self.button_barre.winfo_reqheight() - 50
+		pady = self.videos[0].title.winfo_reqheight() + 10
+		self.datas = PiDatas(self.window,1,col_names = ["Tps(ms)"], height = height)
+		self.datas.grid(column=0, row = 1, padx = 10, pady = pady, rowspan = 2)#, sticky = 'nw')
+		for video in self.videos:
+			self.datas.add_video(list(video.get_col_names()))
 
 		#LES MENUS
 		mainmenu = tkinter.Menu(self.window)
@@ -103,7 +111,8 @@ class App(object):
 		mainmenu.add_cascade(label = "Edition", menu = menuEdition)
 
 		menuVideo = tkinter.Menu(mainmenu,tearoff =0)
-		menuVideo.add_command(label = "Ajout video...", command = self.menu_open_video)
+		menuVideo.add_command(label = "Ouvrir video...", command = self.menu_open_video)
+		menuVideo.add_command(label = "Ajout video...", command = self.menu_ajout_video)
 		menuVideo.add_command(label = "Informations", command = self.menu_informations)
 		mainmenu.add_cascade(label = "Video", menu = menuVideo)
 
@@ -144,18 +153,19 @@ class App(object):
 		if nb_video > 4:
 			tkMessageBox.showerror("Ouvrir videos", "Impossible d'ajouter une 5ème video.")
 		else:
-			self.videos.append(Pivideo(self.video_frame, app=self, datas_pos = nb_video-1))
+			video = Pivideo(self.video_frame, app=self, datas_pos = nb_video-1)
+			self.videos.append(video)
 			self.resize_videos()
-			self.init_datas()
+			self.datas.add_video(list(video.get_col_names()))
 
-	def close_video(self, video):
+	def close_video(self, video, confirm = True):
 		'''Ferme une video
 		'''
-		if tkMessageBox.askokcancel("Fermer la vidéo","Voulez vous fermer la vidéo? S'il y a des données elles seront effacées."):
+		if (not confirm) or tkMessageBox.askokcancel("Fermer la vidéo","Voulez vous fermer la vidéo? S'il y a des données elles seront effacées."):
+			self.datas.remove_video(video.datas_pos)
 			self.videos.remove(video)
 			video.destroy()
 			self.resize_videos()
-			self.init_datas()
 
 	def resize_videos(self):
 		''' Redimensionne les videos (après un ajout ou une suppression)
@@ -316,12 +326,9 @@ class App(object):
 		'''Sauve projet
 		'''
 		if self.project_file:
-			print("save_project %s"%self.project_file)
-			#jsonpickle.set_preferred_backend('json')
-			#jsonpickle.set_encoder_options('json', indent = 4)
+			logging.info("save_project %s"%self.project_file)
 			with open(self.project_file, 'w') as f:
-				#f.write(jsonpickle.encode(self))
-				f.write(json.dumps(self,cls = PiEncoder, indent = 4))
+				f.write(json.dumps(self, cls = PiEncoder, indent = 4))
 				f.close()
 		else:
 			self.menu_save_as_project()
@@ -341,8 +348,13 @@ class App(object):
 			qui contient  ['videos', 'datas']
 		'''
 		for i, video_state in enumerate(state['videos']):
+			if len(self.videos) <= i:
+				self.add_video() #Si besoin, ajoute une video
 			if video_state['filename']:
 				self.videos[i].load_json(video_state)
+		while len(self.videos) > len(state['videos']):
+			logging.debug("close %s"%self.videos[-1])
+			self.close_video(self.videos[-1], confirm = False) #Si besoin, ferme video inutile
 		self.datas.load_json(state['datas'])
 		self.init()
 		self.set_title()
@@ -356,7 +368,7 @@ class App(object):
 		'''Renvoie un tuple avec nom et path à sauvegarder ou ouvrir
 		'''
 		if self.project_file:
-			return pathlib.Path(self.project_file).name, pathlib.Path(self.project_file).path
+			return pathlib.Path(self.project_file).name, pathlib.Path(self.project_file).parent
 		else:
 			return "MonProjet.piv", self.path
 
@@ -371,7 +383,8 @@ class App(object):
 	def menu_export(self):
 		'''Export données
 		'''
-		print("menu_export")
+		logging.info("menu_export : TODO")
+		tkMessageBox.askok("Pas encore implémenté... Utiliser l'option 'Copier les valeurs'")
 
 	def menu_quitter(self):
 		'''Quitter
@@ -384,11 +397,18 @@ class App(object):
 		'''
 		clipboard.copy(str(self.datas))
 
-	def menu_open_video(self):
+	def menu_ajout_video(self):
 		'''Ajoute une nouvelle video
 		'''
 		if self.datas.is_empty() or tkMessageBox.askokcancel("Ajout d'une vidéo", "L'ajout d'une video va effacer les données. Voulez-vous continuer?"):
 			self.add_video()
+
+	def menu_open_video(self):
+		''' Ouvre une videos'''
+		for video in self.videos:
+			if not video.video:
+				video.bt_open_video()
+				break
 
 	def menu_informations(self):
 		'''Information sur les videos

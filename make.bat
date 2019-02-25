@@ -8,6 +8,5 @@ pyinstaller ^
   --noconfirm ^
   --add-binary "Ressources\opencv_ffmpeg344.dll;." ^
   --add-binary "Ressources\opencv_ffmpeg344_64.dll;." ^
-  --add-data "marque.xbm;." ^
   pivimage.py
 pause

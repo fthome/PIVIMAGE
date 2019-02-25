@@ -27,6 +27,7 @@ import pathlib
 import PIL.Image, PIL.ImageTk
 import sys
 import math
+import logging
 
 #from piobject import * #Pourquoi PiObject TODO
 from buttons import *
@@ -138,13 +139,13 @@ class Pivideo(tkinter.Frame):
 			self.video = PiVideoCapture(filename)
 			self.canvas.config(width= int((float(self.canvas['height']) * self.video.width) / self.video.height))
 			self.update_video()
-			self.title.config(text=pathlib.Path(filename).name)
+			self.title.config(text=pathlib.Path(filename.encode(sys.getfilesystemencoding())).name)
 			self.update_progress_bar()
 			for video in self.app.videos[1:]:
 				if video.video and self.app.videos[0].video.get_virtual_fps() > video.video.get_virtual_fps():
 					tkMessageBox.showwarning("Video","Attention, la video principale doit avoir le nombre d'images par secondes le plus petit de toutes les videos. Le mode capture risque d'être faussé. Inversez les videos.")
 		except ValueError as e:
-			print(str(e))
+			logging.error(str(e))
 			tkMessageBox.showerror("Ouvrir videos", "Impossible d'ouvrir le fichier.")
 			self.video = None
 
@@ -187,10 +188,10 @@ class Pivideo(tkinter.Frame):
 	def bt_open_video(self):
 		'''Ouvre une boite de dialogue pour selectionner fichier et ouvre la video
 		'''
-		file = tkFileDialog.askopenfilename(title = "Selectionner la vidéo à ouvrir",initialdir = self.app.path).encode(sys.getfilesystemencoding())
+		file = tkFileDialog.askopenfilename(title = "Selectionner la vidéo à ouvrir",initialdir = self.app.path)
 		if file:
 			self.open_video(file)
-			self.app.path = pathlib.Path(file).parent
+			self.app.path = pathlib.Path(file.encode(sys.getfilesystemencoding())).parent
 
 	def bt_close_video(self):
 		'''Ferme la video et redimensionne les autres videos
@@ -314,13 +315,10 @@ class Pivideo(tkinter.Frame):
 		#MODE SELECTION CENTRE COORDONNES POLAIRE
 		if self.app.mode == 'centre' and self.coordonnes.get() == Pivideo.types_coordonnes[1]:
 			self.centre = (evt.x, evt.y)
-			self.centre_lines=[]
-			self.centre_lines.append(self.canvas.create_line(evt.x,0,evt.x,self.canvas.winfo_reqheight(),tags = "coordonnes"))
-			self.centre_lines.append(self.canvas.create_line(0,evt.y,self.canvas.winfo_reqwidth(),evt.y,tags = "coordonnes"))
-			self.app.init_datas()
+			self.draw_coordonnes()
+			self.app.datas.change_datas(self.datas_pos, callback = self.to_polar, col_names = self.get_col_names())
 			self.app.stop_mode()
 			self.canvas.config(cursor = "")
-
 
 
 	def stop_mesure(self):
@@ -375,7 +373,7 @@ class Pivideo(tkinter.Frame):
 	def to_json(self):
 		''' Pour sérialiser (sauvegardes)
 		'''
-		return funcy.project(self.__dict__, ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame', 'ratio_px_mm'])
+		return funcy.project(self.__dict__, ['datas_pos', 'name', 'marques','filename','start_frame', 'offset', 'end_frame', 'ratio_px_mm','centre'])
 
 	def load_json(self, state):
 		'''Load state into App object
@@ -393,6 +391,13 @@ class Pivideo(tkinter.Frame):
 		self.set_ratio_px_mm(state['ratio_px_mm'])
 		self.open_video(self.filename)
 		self.bt_goto_start()
+		self.centre = state['centre']
+		self.centre_lines=[]
+		if self.centre:
+			self.coordonnes.set(Pivideo.types_coordonnes[1])
+			self.app.mode = 'centre'
+			self.draw_coordonnes()
+
 
 	def set_ratio_px_mm(self, ratio_px_mm):
 		'''Update the scale label
@@ -404,28 +409,50 @@ class Pivideo(tkinter.Frame):
 		'''Au changement de coordonnés (cartesien - polaire)
 		'''
 		if self.coordonnes.get() == Pivideo.types_coordonnes[1]: # Si Polaire
-			if tkMessageBox.askokcancel("Coordonnées polaires", "Pointer le centre du système de coordonnées. Attention les captures précédentes seront effacées."):
+			if tkMessageBox.askokcancel("Coordonnées polaires", "Pointer le centre du système de coordonnées."):
 				self.app.stop_mode()
 				self.app.mode = 'centre'
 				self.canvas.config(cursor = "crosshair ")
 			else:
 				self.coordonnes.set(Pivideo.types_coordonnes[0])
 		else: # Si coordonnés cartesien
-			if self.app.datas.is_empty() or tkMessageBox.askokcancel("Coordonnées cartésiens", "Attention les captures précédentes seront effacées."):
-				self.centre = None
-				if self.centre_lines:
-					for line in self.centre_lines:
-						self.canvas.delete(line)
-					self.centre_lines = None
-				self.app.init_datas()
+			#if self.app.datas.is_empty() or tkMessageBox.askokcancel("Coordonnées cartésiens", "Attention les captures précédentes seront effacées."):
+			self.app.datas.change_datas(self.datas_pos, callback = self.to_cartesien, col_names = self.get_col_names())
+			self.centre = None
+			self.draw_coordonnes()
+
+	def to_cartesien(self, r, a):
+		'''Convert polar to cartesien
+		'''
+		return (r*math.cos(a) + self.centre[0]*self.ratio_px_mm, r*math.sin(a) + self.centre[1]*self.ratio_px_mm)
+
+	def to_polar(self, x, y):
+		'''Convert cartesion to polar
+		'''
+		x = x - self.centre[0]*self.ratio_px_mm
+		y = y - self.centre[1]*self.ratio_px_mm
+		return [(x*x+y*y)**0.5,math.atan2(y,x)*180/math.pi]
+
+
+	def draw_coordonnes(self):
+		'''Dessine (ou detruit) les lignes de coordonnes
+		'''
+		if self.centre_lines:
+			for line in self.centre_lines:
+				self.canvas.delete(line)
+		self.centre_lines=[]
+		if self.centre:
+			self.centre_lines.append(self.canvas.create_line(self.centre[0],0,self.centre[0],self.canvas.winfo_reqheight(),tags = "coordonnes"))
+			self.centre_lines.append(self.canvas.create_line(0,self.centre[1],self.canvas.winfo_reqwidth(),self.centre[1],tags = "coordonnes"))
 
 	def get_col_names(self):
 		'''Renvoie un tuple de 2 composé du nom des colonnes de données
 		'''
+		indice = str(self.datas_pos+1)
 		if self.coordonnes.get()==Pivideo.types_coordonnes[1]: # Si Polaire
-			return "R", "A"
+			return "R" + indice, "A" + indice
 		else:
-			return "X", "Y"
+			return "X" + indice, "Y" + indice
 
 	def get_coordonnes(self, evt):
 		''' Retourne une list [x,y] ou [r,angle] mis à l'echele
