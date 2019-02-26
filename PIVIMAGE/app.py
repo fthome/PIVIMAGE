@@ -384,7 +384,7 @@ class App(object):
 		'''Export données
 		'''
 		logging.info("menu_export : TODO")
-		tkMessageBox.askok("Pas encore implémenté... Utiliser l'option 'Copier les valeurs'")
+		tkMessageBox.showinfo("Menu Export", "Pas encore implémenté... Utiliser l'option 'Copier les valeurs'")
 
 	def menu_quitter(self):
 		'''Quitter

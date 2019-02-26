@@ -82,18 +82,26 @@ class Pivideo(tkinter.Frame):
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp fin", command = self.bt_trim_end))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Fermer", command = self.bt_close_video))
 		self.button_barre.grid(sticky = 'nw', padx = 10, pady = 10)
-		self.coordonnes = tkinter.StringVar(value=Pivideo.types_coordonnes[0])
-		for coordonnes in Pivideo.types_coordonnes:
-			self.button_barre.add(tkinter.Radiobutton(self.button_barre, variable = self.coordonnes, text=coordonnes,value = coordonnes, command = self.on_coordonnes_change))
-		self.centre = None
-		self.centre_lines = None
 
+		self.options_barre = tkinter.Frame(self)
+		options_barre_column = 0
 		#Echelle
 		self.scale = tkinter.StringVar()
 		self.set_ratio_px_mm(1)# Nb de mm par pixel
-		self.scale_label = tkinter.Label(self, textvariable = self.scale)
-		self.scale_label.grid()
+		tkinter.Label(self.options_barre, textvariable = self.scale).grid(row=0, column = options_barre_column)
+		options_barre_column += 1
+		#Coordonnes
+		self.options_barre.grid(sticky = 'nw', padx = 0, pady = 0)
+		self.coordonnes = tkinter.StringVar(value=Pivideo.types_coordonnes[0])
+		for coordonnes in Pivideo.types_coordonnes:
+			tkinter.Radiobutton(self.options_barre, variable = self.coordonnes, text=coordonnes,value = coordonnes, command = self.on_coordonnes_change).grid(row=0, column = options_barre_column)
+			options_barre_column +=1
+		self.centre = None
+		self.centre_lines = None
+
+
 		self.set_size(size)
+
 
 	def set_size(self, size):
 		'''Resize the widget
