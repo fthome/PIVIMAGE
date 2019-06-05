@@ -1,6 +1,8 @@
 # coding: utf8
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from six import iteritems
+
 '''
 	Frame tkinter :
 		- Une video
@@ -365,7 +367,7 @@ class Pivideo(tkinter.Frame):
 		if id:
 			frame_time = self.get_frame_time_marque(id)
 		if frame_time is None:
-			marques = self.marques.keys()
+			marques = list(self.marques)
 		elif not isinstance(frame_time ,list):
 				marques = [frame_time]
 		for frame in marques:
@@ -377,7 +379,7 @@ class Pivideo(tkinter.Frame):
 	def get_frame_time_marque(self, id):
 		''' Renvoie le frame_time d'une marque selon son id
 		'''
-		for frame_time, marque in self.marques.iteritems():
+		for frame_time, marque in iteritems(self.marques):
 			if marque.id == id:
 				return frame_time
 
@@ -393,7 +395,7 @@ class Pivideo(tkinter.Frame):
 		self.datas_pos = state['datas_pos']
 		self.name = state['name']
 		self.delete_marques()
-		for frame_time, marque in state['marques'].iteritems():
+		for frame_time, marque in iteritems(state['marques']):
 			self.marques[frame_time] = Marque(self, marque['x'], marque['y'])
 		self.filename = state['filename']
 		self.start_frame = state['start_frame']

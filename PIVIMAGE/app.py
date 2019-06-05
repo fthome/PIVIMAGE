@@ -1,6 +1,7 @@
 # coding: utf8
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from six import itervalues
 
 '''
 	Une interface graphique pour réaliser du pointage image par image
@@ -264,7 +265,7 @@ class App(object):
 			self.button_capture.config(relief = "raised")
 		elif self.mode =='rubber':
 			for video in self.videos:
-				for marque in video.marques.itervalues():
+				for marque in itervalues(video.marques):
 					video.canvas.tag_bind(marque.id, '<Button-1>', None)
 			self.button_rubber.config(relief = "raised")
 		elif self.mode == 'mesure':
@@ -283,7 +284,7 @@ class App(object):
 			self.mode = 'rubber'
 			self.button_rubber.config(relief = "sunken")
 			for video in self.videos:
-				for marque in video.marques.itervalues():
+				for marque in itervalues(video.marques):
 					video.canvas.tag_bind(marque.id, '<Button-1>', self.delete_marque)
 		else:
 			self.stop_mode()
