@@ -33,9 +33,12 @@ class PiVideoCapture(object):
 		'''Open the video source
 		'''
 		logging.info("Open video %s"%self.video_source)
-		try:
-			self.vid = cv2.VideoCapture(self.video_source.encode(sys.getfilesystemencoding()))
+		try: # Python 3
+			self.vid = cv2.VideoCapture(self.video_source)
 		except:
+			try: # Python 2.7
+				self.vid = cv2.VideoCapture(self.video_source.encode(sys.getfilesystemencoding()))
+			except:
 				pass
 		if not self.vid or not self.vid.isOpened():
 			raise ValueError("Unable to open video source", self.video_source)

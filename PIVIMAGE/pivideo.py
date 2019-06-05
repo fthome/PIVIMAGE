@@ -1,5 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
+from __future__ import absolute_import
 '''
 	Frame tkinter :
 		- Une video
@@ -15,13 +16,14 @@ try: #Python 2
 	import tkMessageBox
 	import tkFileDialog
 	import tkSimpleDialog
+	import ttk
 except: # Python 3
 	import tkinter
 	from tkinter import messagebox as tkMessageBox
 	from tkinter import filedialog as tkFileDialog
 	from tkinter import simpledialog as tkSimpleDialog
+	from tkinter import ttk
 
-import ttk
 import funcy
 import pathlib
 import PIL.Image, PIL.ImageTk
@@ -30,9 +32,9 @@ import math
 import logging
 
 #from piobject import * #Pourquoi PiObject TODO
-from buttons import *
-from videocapture import *
-from marque import *
+from .buttons import *
+from .videocapture import *
+from .marque import *
 
 
 class Pivideo(tkinter.Frame):

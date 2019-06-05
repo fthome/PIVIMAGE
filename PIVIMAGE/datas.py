@@ -1,5 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
+from __future__ import absolute_import
 '''
 	Un Frame tkinter
 		qui représente des données classées sous forme de tableau
@@ -14,8 +15,8 @@ try:
 except:
 	import Tkinter as tkinter
 
-from scrframe import *
-from piencoder import *
+from .scrframe import *
+from .piencoder import *
 import funcy
 import logging
 

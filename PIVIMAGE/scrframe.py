@@ -4,14 +4,12 @@
 # Thanks : https://gist.github.com/EugeneBakin
 # http://tkinter.unpythonic.net/wiki/VerticalScrolledFrame
 
-try:
-	import tkinter
-except:
+try: #Python 2
 	import Tkinter as tkinter
-
-from ttk import *
-
-
+	import ttk
+except: # Python 3
+	import tkinter
+	from tkinter import ttk
 
 class VerticalScrolledFrame(tkinter.Frame):
 	"""A pure Tkinter scrollable frame that actually works!
@@ -21,7 +19,7 @@ class VerticalScrolledFrame(tkinter.Frame):
 
 	"""
 	def __init__(self, parent, height = None, *args, **kw):
-		tkinter.Frame.__init__(self, parent, *args, **kw)            
+		tkinter.Frame.__init__(self, parent, *args, **kw)
 
 		# create a canvas object and a vertical scrollbar for scrolling it
 		vscrollbar = tkinter.Scrollbar(self, orient=tkinter.VERTICAL)
@@ -36,7 +34,7 @@ class VerticalScrolledFrame(tkinter.Frame):
 		canvas.yview_moveto(0)
 
 		# create a frame inside the canvas which will be scrolled with it
-		self.interior = interior = Frame(canvas)
+		self.interior = interior = ttk.Frame(canvas)
 		interior_id = canvas.create_window(0, 0, window=interior,
 										   anchor=tkinter.NW)
 

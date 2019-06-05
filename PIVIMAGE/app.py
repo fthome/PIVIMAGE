@@ -1,5 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 '''
 	Une interface graphique pour réaliser du pointage image par image
@@ -28,16 +29,15 @@ except: # Python 2
 	import tkFileDialog
 
 import pathlib, os
-#import jsonpickle
 import json
 import funcy
 import pyperclip as clipboard
 import logging
 
-from piencoder import *
-from pivideo import *
-from datas import *
-from version import __version__
+from .piencoder import *
+from .pivideo import *
+from .datas import *
+from .version import __version__
 
 class App(object):
 	'''Une application PIVIMAGE
