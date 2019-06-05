@@ -31,11 +31,12 @@ Juste
 
 #### Prérequis
 
-Python 2.7 ou 3 (non testé)
+Python 2.7 ou Python 3
 
 #### Installation
 
 Cloner le projet, installer les dépendances (avec pip)
+(voir requirements.txt)
 
 #### Exécution
 

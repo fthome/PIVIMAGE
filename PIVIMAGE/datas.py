@@ -179,7 +179,7 @@ class PiDatas(VerticalScrolledFrame):
 		txt = u''
 		for col_name in self.col_names:
 			txt += col_name + u"\t"
-		for frame_time in sorted(self.lines.iterkeys()):
+		for frame_time in sorted(iter(self.lines)):
 			txt += u"\n"
 			for cell in self.lines[frame_time]:
 				txt += str(cell.cget('text')).replace('.',self.separateur) + u"\t"

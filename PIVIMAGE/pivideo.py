@@ -35,6 +35,7 @@ import logging
 from .buttons import *
 from .videocapture import *
 from .marque import *
+from . import utils
 
 
 class Pivideo(tkinter.Frame):
@@ -149,7 +150,7 @@ class Pivideo(tkinter.Frame):
 			self.video = PiVideoCapture(filename)
 			self.canvas.config(width= int((float(self.canvas['height']) * self.video.width) / self.video.height))
 			self.update_video()
-			self.title.config(text=pathlib.Path(filename.encode(sys.getfilesystemencoding())).name)
+			self.title.config(text=pathlib.Path(utils.encode(filename)).name)
 			self.update_progress_bar()
 			for video in self.app.videos[1:]:
 				if video.video and self.app.videos[0].video.get_virtual_fps() > video.video.get_virtual_fps():
@@ -201,7 +202,7 @@ class Pivideo(tkinter.Frame):
 		file = tkFileDialog.askopenfilename(title = "Selectionner la vidéo à ouvrir",initialdir = self.app.path)
 		if file:
 			self.open_video(file)
-			self.app.path = pathlib.Path(file.encode(sys.getfilesystemencoding())).parent
+			self.app.path = pathlib.Path(utils.encode(file)).parent
 
 	def bt_close_video(self):
 		'''Ferme la video et redimensionne les autres videos

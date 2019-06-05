@@ -1,5 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 '''
 	Base sur opencv2,
@@ -15,6 +16,8 @@ import cv2
 import funcy
 import sys
 import logging
+
+from . import utils
 
 class PiVideoCapture(object):
 	''' Une video
@@ -32,14 +35,11 @@ class PiVideoCapture(object):
 	def open(self):
 		'''Open the video source
 		'''
-		logging.info("Open video %s"%self.video_source)
-		try: # Python 3
-			self.vid = cv2.VideoCapture(self.video_source)
+		logging.info("Open video %s"%utils.encode(self.video_source))
+		try:
+			self.vid = cv2.VideoCapture(utils.encode(self.video_source))
 		except:
-			try: # Python 2.7
-				self.vid = cv2.VideoCapture(self.video_source.encode(sys.getfilesystemencoding()))
-			except:
-				pass
+			pass
 		if not self.vid or not self.vid.isOpened():
 			raise ValueError("Unable to open video source", self.video_source)
 		self.last_frame = None

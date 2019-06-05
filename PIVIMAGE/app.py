@@ -337,7 +337,7 @@ class App(object):
 		'''Sauve as projet
 		'''
 		name, path = self.get_name_path()
-		file = tkFileDialog.asksaveasfilename(title = "Sauvegarder le projet sous...", defaultextension=".piv", filetypes = [("Projet PIVIMAGE","*.piv")], initialfile = name , initialdir = path).encode(sys.getfilesystemencoding())
+		file = tkFileDialog.asksaveasfilename(title = "Sauvegarder le projet sous...", defaultextension=".piv", filetypes = [("Projet PIVIMAGE","*.piv")], initialfile = name , initialdir = utils.encode(path))
 		if file:
 			self.project_file = file
 			self.menu_save_project()
