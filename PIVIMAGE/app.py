@@ -71,11 +71,17 @@ class App(object):
 		self.button_barre.add(self.button_mesure)
 		self.button_capture = tkinter.Button(self.button_barre, text = "Mode Capture", command = self.bt_capture_datas)
 		self.button_barre.add(self.button_capture)
+		self.nb_point_capture = tkinter.IntVar(value=1)
+		frame_nb_point_capture = tkinter.Frame(self.button_barre)
+		tkinter.Label(frame_nb_point_capture, text = "Nombre de point par image :").grid(column = 0, row = 0)
+		tkinter.Spinbox(frame_nb_point_capture, from_ = 1, to_ = 8, increment_ = 1, textvariable = self.nb_point_capture, width = 1).grid(column = 1, row = 0)
+		self.button_barre.add(frame_nb_point_capture)
 		self.button_rubber = tkinter.Button(self.button_barre, text = "Supp points", command = self.bt_rubber)
 		self.button_barre.add(self.button_rubber)
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp tous les points", command = self.bt_rubber_all))
 		self.vitesse = tkinter.IntVar(value=10)
 		self.button_barre.add(tkinter.Scale(self.button_barre, label = "Vitesse de lecture", from_ = 1, to_ = App.vitesse_max, resolution = 1, orient = 'horizontal', length = 150, variable = self.vitesse))
+
 
 		#LES VIDEOS
 		self.video_frame = tkinter.Frame(self.window, borderwidth  = 2,relief = 'groove')
@@ -130,7 +136,7 @@ class App(object):
 
 	def init(self):
 		self.project_file = None
-		self.capture = None #None si pas de capture, sinon, l'index de la vidéo à capturer
+		self.capture = None #None si pas de capture, sinon, l'index de la vidéo-point à capturer
 		self.mode = None # None | 'capture' | 'rubber'
 
 	def reinit(self):
@@ -430,3 +436,7 @@ class App(object):
 				"License : CeCILL version 2.1\n" + \
 				"https://github.com/fthome/PIVIMAGE" \
 				)
+
+if __name__ == "__main__":
+	App = PIVIMAGE.App()
+	App.run()

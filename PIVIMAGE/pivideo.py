@@ -291,25 +291,31 @@ class Pivideo(tkinter.Frame):
 				-
 		'''
 		# MODE CAPTURE
-		if self.app.capture != None and self.app.videos[self.app.capture] == self and self.video:
+		nb_point = self.app.nb_point_capture.get()
+		if self.app.capture != None and self.app.videos[self.app.capture//nb_point] == self and self.video:
 			#Ajoute les données au tableau
 			frame_time = int(round(self.get_relative_time()))
-			self.app.datas.add(frame_time, [0,0]*self.datas_pos + self.get_coordonnes(evt))
+			self.app.datas.add(frame_time, [0,0]*self.datas_pos + self.get_coordonnes(evt)) #TODO ADAPT nb_point_capture
 			#Ajoute une marques
-			self.marques[frame_time]=Marque(self, evt.x, evt.y)
-			self.last_capture = (evt.x, evt.y)
-			# Avance d'un frame (dans le fps de la video maitre)
-			if self.datas_pos != 0: # Si pas video maitre : on avance jusque la frame précédente correspondant au temps de la video 0
-				self.video.goto_time(self.app.videos[0].get_relative_time() + self.offset + ( self.video.get_time(self.start_frame) if self.start_frame else 0) - 1000.0 / self.video.get_virtual_fps())
-			self.update_video()
-			#rend active la PiVideo suivante qui a une video ouverte
+			self.marques[frame_time]=Marque(self, evt.x, evt.y, self.app.capture%nb_point)
+			self.last_capture = (evt.x, evt.y) # TODO ADAPT nb_point_capture
 			self.app.capture +=1
-			self.app.capture %=len(self.app.videos)
-			while not self.app.videos[self.app.capture].video:
-				self.app.capture +=1
-				self.app.capture %=len(self.app.videos)
-			self.canvas.config(cursor = "")
-			self.app.videos[self.app.capture].move_mouse_at_last_capture()
+			if self.app.capture%nb_point == 0:
+				logging.debug("Avance d'un frame dans la video %s"%self)
+				# Avance d'un frame (dans le fps de la video maitre)
+				if self.datas_pos != 0: # Si pas video maitre : on avance jusque la frame précédente correspondant au temps de la video 0
+					self.video.goto_time(self.app.videos[0].get_relative_time() + self.offset + ( self.video.get_time(self.start_frame) if self.start_frame else 0) - 1000.0 / self.video.get_virtual_fps())
+				self.update_video()
+				#rend active la PiVideo suivante qui a une video ouverte
+				self.app.capture %=len(self.app.videos*nb_point)
+				while not self.app.videos[self.app.capture//nb_point].video:
+					self.app.capture += nb_point
+					self.app.capture %=len(self.app.videos*nb_point)
+				self.canvas.config(cursor = "")
+				self.app.videos[self.app.capture//nb_point].move_mouse_at_last_capture()
+			else:#Juste changement de point sur la meme video
+				pass
+
 		# MODE MESURE
 		if self.app.mode == 'mesure':
 			if not self.line_mesure:

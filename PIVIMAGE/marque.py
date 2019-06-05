@@ -17,18 +17,21 @@ class Marque(object):
 		   0x01, 0x02, 0x02, 0x01, 0xb4, 0x00, 0x78, 0x00, 0xfc, 0x00, 0xfc, 0x00,
 		   0x78, 0x00, 0xb4, 0x00, 0x02, 0x01, 0x01, 0x02 };
 	"""
-	bitmap = None
-	def __init__(self, parent, x,y):
+	bitmaps = [None]*8
+	colors = ["blue", "red", "green", "cyan", "yellow", "magenta", "black", "white"]
+
+	def __init__(self, parent, x,y, color = 0):
 		'''
 			parent	:	une instance de Pivideo
 			x,y		:	coordonnées
 		'''
-		if not Marque.bitmap:
-			Marque.bitmap = tkinter.BitmapImage(data=Marque.BITMAP,foreground="blue")
+
+		if not Marque.bitmaps[color]:
+			Marque.bitmaps[color] = tkinter.BitmapImage(data=Marque.BITMAP,foreground=Marque.colors[color])
 		self.parent = parent
 		self.x = x
 		self.y = y
-		self.id = parent.canvas.create_image(x,y,image = Marque.bitmap, tags = "marques")
+		self.id = parent.canvas.create_image(x,y,image = Marque.bitmaps[color], tags = "marques")
 
 	def __del__(self):
 		''' Destructeur
