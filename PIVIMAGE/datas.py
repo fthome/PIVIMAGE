@@ -66,7 +66,7 @@ class PiDatas(VerticalScrolledFrame):
 			return : video_index
 		'''
 		logging.debug("Add video with col_names = %s"%col_names)
-		for col in range(self.numberColumns, self.numberColumns + 2):
+		for col in range(self.numberColumns, self.numberColumns + len(col_names)):
 			logging.debug("Colonne index : %s"%col)
 			try:
 				name = col_names[col-self.numberColumns]

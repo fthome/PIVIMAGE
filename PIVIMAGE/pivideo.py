@@ -295,7 +295,7 @@ class Pivideo(tkinter.Frame):
 		if self.app.capture != None and self.app.videos[self.app.capture//nb_point] == self and self.video:
 			#Ajoute les données au tableau
 			frame_time = int(round(self.get_relative_time()))
-			self.app.datas.add(frame_time, [0,0]*self.datas_pos + self.get_coordonnes(evt)) #TODO ADAPT nb_point_capture
+			self.app.datas.add(frame_time, [0,0]*(self.app.capture) + self.get_coordonnes(evt))
 			#Ajoute une marques
 			self.marques[frame_time]=Marque(self, evt.x, evt.y, self.app.capture%nb_point)
 			self.last_capture = (evt.x, evt.y) # TODO ADAPT nb_point_capture
@@ -335,7 +335,8 @@ class Pivideo(tkinter.Frame):
 		if self.app.mode == 'centre' and self.coordonnes.get() == Pivideo.types_coordonnes[1]:
 			self.centre = (evt.x, evt.y)
 			self.draw_coordonnes()
-			self.app.datas.change_datas(self.datas_pos, callback = self.to_polar, col_names = self.get_col_names())
+			for i in range(nb_point):
+				self.app.datas.change_datas(self.datas_pos+i, callback = self.to_polar, col_names = self.get_col_names()[i:i+1])
 			self.app.stop_mode()
 			self.canvas.config(cursor = "")
 
@@ -363,7 +364,7 @@ class Pivideo(tkinter.Frame):
 			self.canvas.event_generate('<Motion>', warp=True, x=self.last_capture[0], y=self.last_capture[1])
 		self.canvas.config(cursor = "tcross")
 
-	def delete_marques(self, frame_time = None, id = None):
+	def delete_marques(self, frame_time = None, id = None): #TODO : ADAPT nb_point_capture
 		'''Supprimer des marques
 			frame_time 		:		Si None		: supprime toutes les marques
 									Si valeur	: supprime 1 marque
@@ -436,7 +437,8 @@ class Pivideo(tkinter.Frame):
 				self.coordonnes.set(Pivideo.types_coordonnes[0])
 		else: # Si coordonnés cartesien
 			#if self.app.datas.is_empty() or tkMessageBox.askokcancel("Coordonnées cartésiens", "Attention les captures précédentes seront effacées."):
-			self.app.datas.change_datas(self.datas_pos, callback = self.to_cartesien, col_names = self.get_col_names())
+			for i in range(self.app.nb_point_capture.get()):
+				self.app.datas.change_datas(self.datas_pos+i, callback = self.to_cartesien, col_names = self.get_col_names()[i:i+1])
 			self.centre = None
 			self.draw_coordonnes()
 
@@ -454,7 +456,7 @@ class Pivideo(tkinter.Frame):
 
 
 	def draw_coordonnes(self):
-		'''Dessine (ou detruit) les lignes de coordonnes
+		'''Dessine (ou detruit) les lignes de coordonnes polaires
 		'''
 		if self.centre_lines:
 			for line in self.centre_lines:
@@ -465,13 +467,23 @@ class Pivideo(tkinter.Frame):
 			self.centre_lines.append(self.canvas.create_line(0,self.centre[1],self.canvas.winfo_reqwidth(),self.centre[1],tags = "coordonnes"))
 
 	def get_col_names(self):
-		'''Renvoie un tuple de 2 composé du nom des colonnes de données
+		'''Renvoie une liste composée du nom des colonnes de données associées à la video
 		'''
-		indice = str(self.datas_pos+1)
-		if self.coordonnes.get()==Pivideo.types_coordonnes[1]: # Si Polaire
-			return "R" + indice, "A" + indice
-		else:
-			return "X" + indice, "Y" + indice
+		indice1 = str(self.datas_pos+1)
+		nb_point = self.app.nb_point_capture.get()
+		col_names = []
+		for indice2 in range(nb_point):
+			if self.coordonnes.get()==Pivideo.types_coordonnes[1]: # Si Polaire
+				if nb_point==1:
+					col_names +=  ["R%s"%indice1, "A%s"%indice1]
+				else:
+					col_names +=  ["R%s-%s"%(indice1, indice2), "A%s-%s"%(indice1,indice2)]
+			else:
+				if nb_point==1:
+					col_names +=  ["X%s"%indice1, "Y%s"%indice1]
+				else:
+					col_names +=  ["X%s-%s"%(indice1, indice2), "Y%s-%s"%(indice1,indice2)]
+		return col_names
 
 	def get_coordonnes(self, evt):
 		''' Retourne une list [x,y] ou [r,angle] mis à l'echele

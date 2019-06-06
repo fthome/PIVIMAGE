@@ -74,7 +74,7 @@ class App(object):
 		self.nb_point_capture = tkinter.IntVar(value=1)
 		frame_nb_point_capture = tkinter.Frame(self.button_barre)
 		tkinter.Label(frame_nb_point_capture, text = "Nombre de point par image :").grid(column = 0, row = 0)
-		tkinter.Spinbox(frame_nb_point_capture, from_ = 1, to_ = 8, increment_ = 1, textvariable = self.nb_point_capture, width = 1).grid(column = 1, row = 0)
+		tkinter.Spinbox(frame_nb_point_capture, from_ = 1, to_ = 8, increment_ = 1, textvariable = self.nb_point_capture, width = 1, command = self.on_change_nb_point_capture).grid(column = 1, row = 0)
 		self.button_barre.add(frame_nb_point_capture)
 		self.button_rubber = tkinter.Button(self.button_barre, text = "Supp points", command = self.bt_rubber)
 		self.button_barre.add(self.button_rubber)
@@ -417,6 +417,17 @@ class App(object):
 				video.bt_open_video()
 				break
 
+	def on_change_nb_point_capture(self):
+		'''Au changement de non de point de capture
+		'''
+		logging.debug("Changement nb de point capture : %s"%self.nb_point_capture.get())
+		if not self.datas.is_empty() and self.datas.numberColumns < len(self.videos)*self.nb_point_capture.get():
+			if tkMessageBox.askokcancel("Réduction du nombre de points par video", "Cette action va supprimer des données. Voulez-vous continuer?"):
+				pass # TODO ADAPT nb_point_capture
+			else:
+				self.nb_point_capture.set(self.datas.numberColumns//len(self.videos))
+
+
 	def menu_informations(self):
 		'''Information sur les videos
 		'''
@@ -436,6 +447,7 @@ class App(object):
 				"License : CeCILL version 2.1\n" + \
 				"https://github.com/fthome/PIVIMAGE" \
 				)
+
 
 if __name__ == "__main__":
 	App = PIVIMAGE.App()
