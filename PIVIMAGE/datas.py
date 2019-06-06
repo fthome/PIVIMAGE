@@ -51,7 +51,7 @@ class PiDatas(VerticalScrolledFrame):
 		'''
 		return not bool(self.lines)
 
-	def remove_video(self, video_index):
+	def remove_video(self, video_index):# A SUPPRIMER
 		'''Supprime une video
 		'''
 		#Suppression des entetes
@@ -60,6 +60,19 @@ class PiDatas(VerticalScrolledFrame):
 			del self.entetes[row]
 		#Supression des Coordonnées
 		self.delete(None, video_index)
+
+	def remove_datas(self, datas_pos):
+		'''Supprime 2 colonnes
+		'''
+		#Suppression des entetes
+		for row in [datas_pos*2+2,datas_pos*2+1]:
+			self.entetes[row].destroy()
+			del self.entetes[row]
+			self.col_names.pop(row)
+		#Supression des Coordonnées
+		self.delete(None, datas_pos)
+		#
+		self.numberColumns -=2
 
 	def add_video(self, col_names=[]):
 		'''Insert new rows for a video
@@ -82,7 +95,7 @@ class PiDatas(VerticalScrolledFrame):
 				cell = tkinter.Label(self.interior, text = "-",**PiDatas.cell_format)
 				label.grid(row = 0, column = col, padx = 0, pady = 0)
 				self.lines[frame_no].append(cell)
-		self.numberColumns +=2
+		self.numberColumns += len(col_names)
 		return (self.numberColumns - 1)/2
 
 
