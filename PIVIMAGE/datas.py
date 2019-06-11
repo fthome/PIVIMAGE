@@ -66,6 +66,7 @@ class PiDatas(VerticalScrolledFrame):
 		'''
 		#Suppression des entetes
 		for row in [datas_pos*2+2,datas_pos*2+1]:
+			logging.debug("Remove colonne n° %s"%row)
 			self.entetes[row].destroy()
 			del self.entetes[row]
 			self.col_names.pop(row)

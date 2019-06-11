@@ -66,7 +66,7 @@ class App(object):
 
 		#LES BOUTONS A GAUCHE
 		self.button_barre = PiButtonsBarre(self.window, borderwidth  = 2,relief = 'groove', direction = tkinter.VERTICAL)
-		self.button_barre.grid(column = 0, row = 0)
+		self.button_barre.grid(column = 0, row = 0,padx = 10, pady = 5, sticky = tkinter.NW)
 		self.button_mesure = tkinter.Button(self.button_barre, text = "Echelle", command = self.bt_ruler)
 		self.button_barre.add(self.button_mesure)
 		self.button_capture = tkinter.Button(self.button_barre, text = "Mode Capture", command = self.bt_capture_datas)
@@ -96,7 +96,7 @@ class App(object):
 		height = self.window.winfo_reqheight() - self.button_barre.winfo_reqheight() - 50
 		pady = self.videos[0].title.winfo_reqheight() + 10
 		self.datas = PiDatas(self.window,1,col_names = ["Tps(ms)"], height = height)
-		self.datas.grid(column=0, row = 1, padx = 10, pady = pady, rowspan = 2)#, sticky = 'nw')
+		self.datas.grid(column=0, row = 1, padx = 10, pady = pady, rowspan = 2, sticky = 'nw')
 		for video in self.videos:
 			self.datas.add_video(video.get_col_names())
 
