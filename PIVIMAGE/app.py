@@ -169,7 +169,9 @@ class App(object):
 		'''Ferme une video
 		'''
 		if (not confirm) or tkMessageBox.askokcancel("Fermer la vidéo","Voulez vous fermer la vidéo? S'il y a des données elles seront effacées."):
-			self.datas.remove_video(video.datas_pos)# TODO : ADAPT % nb_point_capture
+			nb_point_capture = self.nb_point_capture.get()
+			for i in range(nb_point_capture,0,-1):
+				self.datas.remove_datas(video.datas_pos*nb_point_capture + i -1)
 			self.videos.remove(video)
 			video.destroy()
 			self.resize_videos()
@@ -420,22 +422,26 @@ class App(object):
 	def on_change_nb_point_capture(self):
 		'''Au changement de nb de point de capture
 		'''
-		nb_point_capture_before = int((self.datas.numberColumns-1) / len(self.videos) / 2)
-		logging.debug("Changement nb de point capture :  %s => %s"%(nb_point_capture_before,self.nb_point_capture.get()))
-		if self.nb_point_capture.get() < nb_point_capture_before:
-			# Si réduction du nb de points
-			if self.datas.is_empty() or tkMessageBox.askokcancel("Réduction du nombre de points par video", "Cette action va supprimer des données. Voulez-vous continuer?"):
-				for video in self.videos[::-1]:
-					for i in range(nb_point_capture_before-self.nb_point_capture.get()):
-					#while self.datas.numberColumns-1 > len(self.videos)*self.nb_point_capture.get():
-						logging.debug("Remove datas pos %s"%(video.datas_pos*nb_point_capture_before+self.nb_point_capture.get()))
-						self.datas.remove_datas(video.datas_pos*nb_point_capture_before+self.nb_point_capture.get())
+		if len(self.videos)>0:
+			nb_point_capture_before = int((self.datas.numberColumns-1) / len(self.videos) / 2)
+			logging.debug("Changement nb de point capture :  %s => %s"%(nb_point_capture_before,self.nb_point_capture.get()))
+			if self.nb_point_capture.get() < nb_point_capture_before:
+				# Si réduction du nb de points
+				if self.datas.is_empty() or tkMessageBox.askokcancel("Réduction du nombre de points par video", "Cette action va supprimer des données. Voulez-vous continuer?"):
+					for video in self.videos[::-1]:
+						for i in range(nb_point_capture_before-self.nb_point_capture.get()):
+						#while self.datas.numberColumns-1 > len(self.videos)*self.nb_point_capture.get():
+							logging.debug("Remove datas pos %s"%(video.datas_pos*nb_point_capture_before+self.nb_point_capture.get()))
+							self.datas.remove_datas(video.datas_pos*nb_point_capture_before+self.nb_point_capture.get())
+				else:
+					self.nb_point_capture.set(nb_point_capture_before)
 			else:
-				self.nb_point_capture.set(nb_point_capture_before)
-		else:
-			# Si augmentation du nb de points
-			for video in self.videos:
-				self.datas.add_video(video.get_col_names()[(nb_point_capture_before-1)*2:(self.nb_point_capture.get()-1)*2])
+				# Si augmentation du nb de points
+				if nb_point_capture_before == 1:
+					for video in self.videos:
+						self.datas.change_datas(video.datas_pos, callback = None, col_names = video.get_col_names()[:2])
+				for video in self.videos:
+					self.datas.add_video(video.get_col_names()[(nb_point_capture_before)*2:(self.nb_point_capture.get())*2])
 
 
 	def menu_informations(self):

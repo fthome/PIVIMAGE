@@ -51,16 +51,6 @@ class PiDatas(VerticalScrolledFrame):
 		'''
 		return not bool(self.lines)
 
-	def remove_video(self, video_index):# A SUPPRIMER
-		'''Supprime une video
-		'''
-		#Suppression des entetes
-		for row in [video_index*2+2,video_index*2+1]:
-			self.entetes[row].destroy()
-			del self.entetes[row]
-		#Supression des Coordonnées
-		self.delete(None, video_index)
-
 	def remove_datas(self, datas_pos):
 		'''Supprime 2 colonnes
 		'''
@@ -132,7 +122,7 @@ class PiDatas(VerticalScrolledFrame):
 						text = data[j]
 					self.lines[frame_time][j+1].config(text=text)
 
-	def delete(self, frame_time = None, video_index = None):
+	def delete(self, frame_time = None, datas_pos = None):
 		'''Delete une ou pls donnée
 				frame_time		:	Si None => tous
 									Si Int	=> 1
@@ -145,16 +135,16 @@ class PiDatas(VerticalScrolledFrame):
 		else:
 			frames = frame_time
 		for frame in frames:
-			if video_index is None:
+			if datas_pos is None:
 				for cell in self.lines[frame]:
 					if cell:
 						cell.destroy()
 				self.lines.pop(frame)
 			else:
-				self.lines[frame][video_index*2+1].destroy()
-				self.lines[frame][video_index*2+2].destroy()
-				self.lines[frame][video_index*2+1]=None
-				self.lines[frame][video_index*2+2]=None
+				self.lines[frame][datas_pos*2+1].destroy()
+				self.lines[frame][datas_pos*2+2].destroy()
+				self.lines[frame][datas_pos*2+1]=None
+				self.lines[frame][datas_pos*2+2]=None
 				is_active = False
 				for cell in self.lines[frame][1:]:
 					if cell and cell["text"]!="-":
@@ -199,7 +189,7 @@ class PiDatas(VerticalScrolledFrame):
 				txt += str(cell.cget('text')).replace('.',self.separateur) + u"\t"
 		return txt
 
-	def change_datas(self, datas_pos, callback, col_names = []):
+	def change_datas(self, datas_pos, callback = None, col_names = []):
 		'''Transforme les données
 			datas_pos	:	0 pour la 1er video, 1 ...
 			col_names	:	["Xn", "Yn"] ou ["Rn", "An"]
@@ -217,8 +207,9 @@ class PiDatas(VerticalScrolledFrame):
 		except IndexError:
 			pass
 		#Données
-		for frame_no in self.lines:
-			line = self.lines[frame_no]
-			val1, val2 = callback(float(line[index1].cget('text')),float(line[index2].cget('text')))
-			line[index1].config(text=PiDatas.str_format%val1)
-			line[index2].config(text=PiDatas.str_format%val2)
+		if callback:
+			for frame_no in self.lines:
+				line = self.lines[frame_no]
+				val1, val2 = callback(float(line[index1].cget('text')),float(line[index2].cget('text')))
+				line[index1].config(text=PiDatas.str_format%val1)
+				line[index2].config(text=PiDatas.str_format%val2)
