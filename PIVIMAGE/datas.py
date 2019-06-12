@@ -129,11 +129,12 @@ class PiDatas(VerticalScrolledFrame):
 									Si list	=> la liste
 		'''
 		if frame_time is None:
-			frames = self.lines.keys()
+			frames = list(self.lines.keys())
 		elif not isinstance(frame_time,list):
 			frames = [frame_time]
 		else:
 			frames = frame_time
+		logging.debug("Données à détruire : %s"%frames)
 		for frame in frames:
 			if datas_pos is None:
 				for cell in self.lines[frame]:

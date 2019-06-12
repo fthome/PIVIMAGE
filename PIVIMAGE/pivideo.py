@@ -33,7 +33,6 @@ import sys
 import math
 import logging
 
-#from piobject import * #Pourquoi PiObject TODO
 from .buttons import *
 from .videocapture import *
 from .marque import *
@@ -61,7 +60,7 @@ class Pivideo(tkinter.Frame):
 		self.init()
 		self.name = name or self.name
 		self.marques = {}
-		self.last_capture = None
+		self.last_capture = {} # {indice_mesure : (x, y)}
 		self.line_mesure = None
 		self.size = size
 		#TITRE
@@ -297,8 +296,8 @@ class Pivideo(tkinter.Frame):
 			frame_time = int(round(self.get_relative_time()))
 			self.app.datas.add(frame_time, [0,0]*(self.app.capture) + self.get_coordonnes(evt))
 			#Ajoute une marques
-			self.marques[frame_time]=Marque(self, evt.x, evt.y, self.app.capture%nb_point)
-			self.last_capture = (evt.x, evt.y) # TODO ADAPT nb_point_capture
+			self.marques[(frame_time,self.app.capture%nb_point)]=Marque(self, evt.x, evt.y, self.app.capture%nb_point)
+			self.last_capture[self.app.capture%nb_point] = (evt.x, evt.y)
 			self.app.capture +=1
 			if self.app.capture%nb_point == 0:
 				logging.debug("Avance d'un frame dans la video %s"%self)
@@ -312,9 +311,8 @@ class Pivideo(tkinter.Frame):
 					self.app.capture += nb_point
 					self.app.capture %=len(self.app.videos*nb_point)
 				self.canvas.config(cursor = "")
-				self.app.videos[self.app.capture//nb_point].move_mouse_at_last_capture()
-			else:#Juste changement de point sur la meme video
-				pass
+			self.app.videos[self.app.capture//nb_point].move_mouse_at_last_capture()
+			
 
 		# MODE MESURE
 		if self.app.mode == 'mesure':
@@ -360,35 +358,32 @@ class Pivideo(tkinter.Frame):
 		'''Déplace la souris à l'emplacement de la dernière capture
 		et change le curseur en "main"
 		'''
-		if self.last_capture:
-			self.canvas.event_generate('<Motion>', warp=True, x=self.last_capture[0], y=self.last_capture[1])
+		index = self.app.capture%self.app.nb_point_capture.get()
+		logging.debug("Move to next mesure : %s - index = %s"%(self, index))
+		logging.debug("self.app.capture = %s self.app.nb_point_capture = %s"%(self.app.capture, self.app.nb_point_capture.get()))
+		if index in self.last_capture:
+			self.canvas.event_generate('<Motion>', warp=True, x=self.last_capture[index][0], y=self.last_capture[index][1])
 		self.canvas.config(cursor = "tcross")
 
-	def delete_marques(self, frame_time = None, id = None): #TODO : ADAPT nb_point_capture
+	def delete_marques(self, id = None):
 		'''Supprimer des marques
-			frame_time 		:		Si None		: supprime toutes les marques
-									Si valeur	: supprime 1 marque
-									Si list		: supprime la liste
-			id				:		numero d'item
+			id				:		numero d'item (si None : supprime tous les marques)
 		'''
 		if id:
-			frame_time = self.get_frame_time_marque(id)
-		if frame_time is None:
+			marques = [self.get_frame_time_marque(id)]
+		else:
 			marques = list(self.marques)
-		elif not isinstance(frame_time ,list):
-				marques = [frame_time]
-		for frame in marques:
-			#self.canvas.delete(self.marques[frame])
-			self.marques.pop(frame)
-			self.app.datas.delete(frame,self.datas_pos)
-		self.last_capture = None
+		for key in marques:
+			self.marques.pop(key)
+			self.app.datas.delete(key[0],self.datas_pos*self.app.nb_point_capture.get()+key[1])
+		#self.last_capture = {} A priori, inutil!!
 
 	def get_frame_time_marque(self, id):
-		''' Renvoie le frame_time d'une marque selon son id
+		''' Renvoie le tuple (frame_time, index) d'une marque selon son id
 		'''
-		for frame_time, marque in iteritems(self.marques):
+		for key, marque in iteritems(self.marques):
 			if marque.id == id:
-				return frame_time
+				return key
 
 	def to_json(self):
 		''' Pour sérialiser (sauvegardes)
@@ -402,7 +397,7 @@ class Pivideo(tkinter.Frame):
 		self.datas_pos = state['datas_pos']
 		self.name = state['name']
 		self.delete_marques()
-		for frame_time, marque in iteritems(state['marques']):
+		for frame_time, marque in iteritems(state['marques']): #TODO : ADAPT nb_point_capture
 			self.marques[frame_time] = Marque(self, marque['x'], marque['y'])
 		self.filename = state['filename']
 		self.start_frame = state['start_frame']
