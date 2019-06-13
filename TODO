@@ -4,10 +4,11 @@ Liste des modifications a réaliser
 * Ajout d'une option "nb de point à mesurer par image"
 ** avec changement de couleur entre chaque série de points
 
-* chg curseur en effacement de points
 * supprimer les marques quand suppression données (réduction nb de mesures / video)
 * message ajout video supprimes les données : non
 * ajout infobulle sur marques
 
 
+
 Bugs :
+* sauvegarde projet : pas de prise en compte du multiploint

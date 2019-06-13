@@ -271,10 +271,10 @@ class App(object):
 			self.capture = None
 			self.mode = None
 			self.button_capture.config(relief = "raised")
-		elif self.mode =='rubber':
+		elif self.mode == 'rubber':
 			for video in self.videos:
 				for marque in itervalues(video.marques):
-					video.canvas.tag_bind(marque.id, '<Button-1>', None)
+					video.canvas.tag_unbind(marque.id, '<Button-1>', None)
 			self.button_rubber.config(relief = "raised")
 		elif self.mode == 'mesure':
 			self.button_mesure.config(relief = "raised")
@@ -285,7 +285,7 @@ class App(object):
 		self.mode = None
 
 	def bt_rubber(self):
-		'''Pass en mode gommage
+		'''Pass en mode suppression de points
 		'''
 		if self.mode != 'rubber':
 			self.stop_mode()
@@ -294,6 +294,7 @@ class App(object):
 			for video in self.videos:
 				for marque in itervalues(video.marques):
 					video.canvas.tag_bind(marque.id, '<Button-1>', self.delete_marque)
+					video.canvas.config(cursor = "target")
 		else:
 			self.stop_mode()
 
