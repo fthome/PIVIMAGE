@@ -142,10 +142,10 @@ class PiDatas(VerticalScrolledFrame):
 						cell.destroy()
 				self.lines.pop(frame)
 			else:
-				self.lines[frame][datas_pos*2+1].destroy()
-				self.lines[frame][datas_pos*2+2].destroy()
-				self.lines[frame][datas_pos*2+1]=None
-				self.lines[frame][datas_pos*2+2]=None
+				for i in [datas_pos*2+1, datas_pos*2+2]:
+					if self.lines[frame][i]:
+						self.lines[frame][i].destroy()
+						self.lines[frame][i]=None
 				is_active = False
 				for cell in self.lines[frame][1:]:
 					if cell and cell["text"]!="-":

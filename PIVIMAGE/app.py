@@ -430,10 +430,11 @@ class App(object):
 				# Si réduction du nb de points
 				if self.datas.is_empty() or tkMessageBox.askokcancel("Réduction du nombre de points par video", "Cette action va supprimer des données. Voulez-vous continuer?"):
 					for video in self.videos[::-1]:
-						for i in range(nb_point_capture_before-self.nb_point_capture.get()):
-						#while self.datas.numberColumns-1 > len(self.videos)*self.nb_point_capture.get():
+						for i in range(nb_point_capture_before,self.nb_point_capture.get(),-1):
 							logging.debug("Remove datas pos %s"%(video.datas_pos*nb_point_capture_before+self.nb_point_capture.get()))
+							video.delete_marques(index_capture = i-1)
 							self.datas.remove_datas(video.datas_pos*nb_point_capture_before+self.nb_point_capture.get())
+
 				else:
 					self.nb_point_capture.set(nb_point_capture_before)
 			else:

@@ -312,7 +312,7 @@ class Pivideo(tkinter.Frame):
 					self.app.capture %=len(self.app.videos*nb_point)
 				self.canvas.config(cursor = "")
 			self.app.videos[self.app.capture//nb_point].move_mouse_at_last_capture()
-			
+
 
 		# MODE MESURE
 		if self.app.mode == 'mesure':
@@ -365,18 +365,20 @@ class Pivideo(tkinter.Frame):
 			self.canvas.event_generate('<Motion>', warp=True, x=self.last_capture[index][0], y=self.last_capture[index][1])
 		self.canvas.config(cursor = "tcross")
 
-	def delete_marques(self, id = None):
-		'''Supprimer des marques
+	def delete_marques(self, id = None, index_capture = None):
+		'''Supprimer des marques et les données liées
 			id				:		numero d'item (si None : supprime tous les marques)
+			index_capture	:		indice de la capture (si None : tous)
 		'''
+		logging.debug("pivideo.delete_marques(%s,%s)"%(id,index_capture))
 		if id:
 			marques = [self.get_frame_time_marque(id)]
 		else:
 			marques = list(self.marques)
 		for key in marques:
-			self.marques.pop(key)
-			self.app.datas.delete(key[0],self.datas_pos*self.app.nb_point_capture.get()+key[1])
-		#self.last_capture = {} A priori, inutil!!
+			if index_capture == None or key[1] == index_capture:
+				self.marques.pop(key)
+				self.app.datas.delete(key[0],self.datas_pos*self.app.nb_point_capture.get()+key[1])
 
 	def get_frame_time_marque(self, id):
 		''' Renvoie le tuple (frame_time, index) d'une marque selon son id
