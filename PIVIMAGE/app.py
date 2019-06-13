@@ -169,17 +169,21 @@ class App(object):
 		'''Ferme une video
 		'''
 		if (not confirm) or tkMessageBox.askokcancel("Fermer la vidéo","Voulez vous fermer la vidéo? S'il y a des données elles seront effacées."):
+			# Suppression des données
 			nb_point_capture = self.nb_point_capture.get()
 			for i in range(nb_point_capture,0,-1):
 				self.datas.remove_datas(video.datas_pos*nb_point_capture + i -1)
+			# Supression de la video
 			self.videos.remove(video)
 			video.destroy()
+			# Resize videos restantes
 			self.resize_videos()
 
 	def resize_videos(self):
 		''' Redimensionne les videos (après un ajout ou une suppression)
 		'''
 		nb_video = len(self.videos)
+		logging.debug("App.resize_videos : %s videos"%nb_video)
 		if nb_video == 1:
 			size = 0.75
 			nb_col = 1
@@ -425,7 +429,7 @@ class App(object):
 		if len(self.videos)>0:
 			nb_point_capture_before = int((self.datas.numberColumns-1) / len(self.videos) / 2)
 			logging.debug("Changement nb de point capture :  %s => %s"%(nb_point_capture_before,self.nb_point_capture.get()))
-			if self.nb_poinsupprimer les marques quand suppression données (réduction nb de mesures / video)t_capture.get() < nb_point_capture_before:
+			if self.nb_point_capture.get() < nb_point_capture_before:
 				# Si réduction du nb de points
 				if self.datas.is_empty() or tkMessageBox.askokcancel("Réduction du nombre de points par video", "Cette action va supprimer des données. Voulez-vous continuer?"):
 					for video in self.videos[::-1]:
