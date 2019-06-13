@@ -410,8 +410,7 @@ class App(object):
 	def menu_ajout_video(self):
 		'''Ajoute une nouvelle video
 		'''
-		if self.datas.is_empty() or tkMessageBox.askokcancel("Ajout d'une vidéo", "L'ajout d'une video va effacer les données. Voulez-vous continuer?"):
-			self.add_video()
+		self.add_video()
 
 	def menu_open_video(self):
 		''' Ouvre une videos'''
@@ -426,7 +425,7 @@ class App(object):
 		if len(self.videos)>0:
 			nb_point_capture_before = int((self.datas.numberColumns-1) / len(self.videos) / 2)
 			logging.debug("Changement nb de point capture :  %s => %s"%(nb_point_capture_before,self.nb_point_capture.get()))
-			if self.nb_point_capture.get() < nb_point_capture_before:
+			if self.nb_poinsupprimer les marques quand suppression données (réduction nb de mesures / video)t_capture.get() < nb_point_capture_before:
 				# Si réduction du nb de points
 				if self.datas.is_empty() or tkMessageBox.askokcancel("Réduction du nombre de points par video", "Cette action va supprimer des données. Voulez-vous continuer?"):
 					for video in self.videos[::-1]:
