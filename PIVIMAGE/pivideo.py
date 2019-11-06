@@ -113,6 +113,9 @@ class Pivideo(tkinter.Frame):
 		self.canvas.config(width=self.winfo_screenwidth()*size, height = self.winfo_screenheight()*size)
 		self.progress_bar.config(length = self.winfo_screenwidth()*size)
 		self.size = size
+		self.update_video(next = False)
+		#TODO : replacer les marques
+
 
 	def __repr__(self):
 		return "PiVideo %s"%self.name
@@ -126,8 +129,9 @@ class Pivideo(tkinter.Frame):
 		self.start_frame = 0
 		self.offset = 0
 		self.end_frame = None
-		self.photo = None
-		self.image = None
+		self.frame = None	# Photo brute issu de la video
+		self.photo_image = None
+		self.image = None	# id de l'item tkinter représentant la photo au bon format
 		self.video = None
 
 	def reinit(self):
@@ -161,27 +165,32 @@ class Pivideo(tkinter.Frame):
 			tkMessageBox.showerror("Ouvrir videos", "Impossible d'ouvrir le fichier.")
 			self.video = None
 
-	def update_video(self):
+	def update_video(self, next = True):
 		'''Met à jour l'affichage de la video (avec le frame suivant)
 		'''
-		ret, frame = self.video.get_frame()
-		if ret and (not self.end_frame or self.video.get_frame_no() < self.end_frame):
-			self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame).resize((self.canvas.winfo_width(), self.canvas.winfo_height())))
-			image_to_delete = self.image
-			self.image = self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW, tags = "image")
-			self.canvas.delete(image_to_delete)
-			try:
-				self.canvas.tag_lower("image","marques")
-			except: # Si pas encore de marques
-				pass
-			try:
-				self.canvas.tag_lower("image","coordonnes")
-			except: # Si pas de centre
-				pass
-			self.update_progress_bar()
-		else:
-			self.mode = "stop"
-			self.video.stop()
+		if self.video:
+			if next:
+				ret, frame = self.video.get_frame()
+			else:
+				ret, frame = (not self.frame is None, self.frame)
+				logging.debug("%.update_video : ret = %s, frame = %s"%(self, ret, frame))
+			if (ret and (not self.end_frame or self.video.get_frame_no() < self.end_frame)):
+				self.photo_image = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame).resize((self.canvas.winfo_width(), self.canvas.winfo_height())))
+				image_to_delete = self.image
+				self.image = self.canvas.create_image(0, 0, image = self.photo_image, anchor = tkinter.NW, tags = "image")
+				self.canvas.delete(image_to_delete)
+				try:
+					self.canvas.tag_lower("image","marques")
+				except: # Si pas encore de marques
+					pass
+				try:
+					self.canvas.tag_lower("image","coordonnes")
+				except: # Si pas de centre
+					pass
+				self.update_progress_bar()
+			else:
+				self.mode = "stop"
+				self.video.stop()
 
 	def get_time(self, frame_no = None):
 		'''Renvoie la duree entre un frame_no et le début de la video.
