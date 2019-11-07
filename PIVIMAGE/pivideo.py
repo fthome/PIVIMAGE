@@ -173,7 +173,7 @@ class Pivideo(tkinter.Frame):
 				ret, frame = self.video.get_frame()
 			else:
 				ret, frame = (not self.frame is None, self.frame)
-				logging.debug("%.update_video : ret = %s, frame = %s"%(self, ret, frame))
+				logging.debug("%s.update_video : ret = %s, frame = %s"%(self, ret, frame))
 			if (ret and (not self.end_frame or self.video.get_frame_no() < self.end_frame)):
 				self.photo_image = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame).resize((self.canvas.winfo_width(), self.canvas.winfo_height())))
 				image_to_delete = self.image
