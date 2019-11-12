@@ -95,7 +95,7 @@ class PiDatas(VerticalScrolledFrame):
 			frame_time		:	Index du tableau
 			data			:	Liste [x1,y1,x2,y2,...] ou [None, None, x2,y2,...]
 		'''
-		data = data + ["-"] * (self.numberColumns - len(data) - 1)
+		data = data + [None] * (self.numberColumns - len(data) - 1)
 		if frame_time not in self.lines:
 			self.lines[frame_time] = []
 			cell = tkinter.Label(self.interior, text = str(frame_time),**PiDatas.cell_format)
@@ -200,13 +200,14 @@ class PiDatas(VerticalScrolledFrame):
 		index1 = datas_pos*2+1
 		index2 = datas_pos*2+2
 		#entetes
-		try:
-			self.col_names[index1]=col_names[0]
-			self.entetes[index1].config(text=col_names[0])
-			self.col_names[index2]=col_names[1]
-			self.entetes[index2].config(text=col_names[1])
-		except IndexError:
-			pass
+		#try:
+		print(col_names)
+		self.col_names[index1]=col_names[0]
+		self.entetes[index1].config(text=col_names[0])
+		self.col_names[index2]=col_names[1]
+		self.entetes[index2].config(text=col_names[1])
+		#except IndexError:
+		#	pass
 		#Données
 		if callback:
 			for frame_no in self.lines:

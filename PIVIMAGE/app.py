@@ -50,11 +50,12 @@ class App(object):
 	images_path = pathlib.Path("./PIVIMAGE/images")
 	vitesse_max = 15
 
-	def __init__(self, name="PIVIMAGE", path = None):
+	def __init__(self, name="PIVIMAGE", path = None, max_videos = 4):
 		'''Initialisation
 			name		:	Nom de l'application
 		'''
 		logging.debug("Création App instance %s"%self)
+		self.max_videos = max_videos
 		self.window = tkinter.Tk()
 		self.name = name
 		self.init()
@@ -67,18 +68,18 @@ class App(object):
 		#LES BOUTONS A GAUCHE
 		self.button_barre = PiButtonsBarre(self.window, borderwidth  = 2,relief = 'groove', direction = tkinter.VERTICAL)
 		self.button_barre.grid(column = 0, row = 0,padx = 10, pady = 5, sticky = tkinter.NW)
-		self.button_mesure = tkinter.Button(self.button_barre, text = "Echelle", command = self.bt_ruler)
+		self.button_mesure = tkinter.Button(self.button_barre, text = "Échelle", command = self.bt_ruler)
 		self.button_barre.add(self.button_mesure)
 		self.button_capture = tkinter.Button(self.button_barre, text = "Mode Capture", command = self.bt_capture_datas)
 		self.button_barre.add(self.button_capture)
 		self.nb_point_capture = tkinter.IntVar(value=1)
 		frame_nb_point_capture = tkinter.Frame(self.button_barre)
-		tkinter.Label(frame_nb_point_capture, text = "Nombre de point par image :").grid(column = 0, row = 0)
-		tkinter.Spinbox(frame_nb_point_capture, from_ = 1, to_ = 8, increment_ = 1, textvariable = self.nb_point_capture, width = 1, command = self.on_change_nb_point_capture).grid(column = 1, row = 0)
+		tkinter.Label(frame_nb_point_capture, text = "Nombre de point(s) par image :").grid(column = 0, row = 0)
+		tkinter.Spinbox(frame_nb_point_capture, from_ = 1, to_ = 4, increment_ = 1, textvariable = self.nb_point_capture, width = 1, command = self.on_change_nb_point_capture).grid(column = 1, row = 0)
 		self.button_barre.add(frame_nb_point_capture)
-		self.button_rubber = tkinter.Button(self.button_barre, text = "Supp points", command = self.bt_rubber)
+		self.button_rubber = tkinter.Button(self.button_barre, text = "Suppr points", command = self.bt_rubber)
 		self.button_barre.add(self.button_rubber)
-		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp tous les points", command = self.bt_rubber_all))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Suppr tous les points", command = self.bt_rubber_all))
 		self.vitesse = tkinter.IntVar(value=10)
 		self.button_barre.add(tkinter.Scale(self.button_barre, label = "Vitesse de lecture", from_ = 1, to_ = App.vitesse_max, resolution = 1, orient = 'horizontal', length = 150, variable = self.vitesse))
 
@@ -95,7 +96,7 @@ class App(object):
 		self.window.update_idletasks()
 		height = self.window.winfo_reqheight() - self.button_barre.winfo_reqheight() - 50
 		pady = self.videos[0].title.winfo_reqheight() + 10
-		self.datas = PiDatas(self.window,1,col_names = ["Tps(ms)"], height = height)
+		self.datas = PiDatas(self.window,1,col_names = ["t(ms)"], height = height)
 		self.datas.grid(column=0, row = 1, padx = 10, pady = pady, rowspan = 2, sticky = 'nw')
 		for video in self.videos:
 			self.datas.add_video(video.get_col_names())
@@ -105,26 +106,26 @@ class App(object):
 		self.window['menu'] = mainmenu
 
 		menuFichier = tkinter.Menu(mainmenu,tearoff =0)
-		menuFichier.add_command(label = "Nouveau projet", command = self.menu_new_project)
-		menuFichier.add_command(label = "Ouvrir projet", command = self.menu_open_project)
-		menuFichier.add_command(label = "Sauve projet", command = self.menu_save_project)
-		menuFichier.add_command(label = "Sauve sous projet", command = self.menu_save_as_project)
-		menuFichier.add_command(label = "Exporter...", command = self.menu_export)
+		#menuFichier.add_command(label = "Nouveau projet", command = self.menu_new_project)
+		#menuFichier.add_command(label = "Ouvrir projet", command = self.menu_open_project)
+		#menuFichier.add_command(label = "Sauve projet", command = self.menu_save_project)
+		#menuFichier.add_command(label = "Sauve sous projet", command = self.menu_save_as_project)
+		#menuFichier.add_command(label = "Exporter...", command = self.menu_export)
 		menuFichier.add_command(label = "Quitter", command = self.menu_quitter)
 		mainmenu.add_cascade(label = "Fichier", menu = menuFichier)
 
 		menuEdition = tkinter.Menu(mainmenu,tearoff =0)
 		menuEdition.add_command(label = "Copier les valeurs", command = self.menu_copy_datas)
-		mainmenu.add_cascade(label = "Edition", menu = menuEdition)
+		mainmenu.add_cascade(label = "Édition", menu = menuEdition)
 
 		menuVideo = tkinter.Menu(mainmenu,tearoff =0)
-		menuVideo.add_command(label = "Ouvrir video...", command = self.menu_open_video)
+		#menuVideo.add_command(label = "Ouvrir video...", command = self.menu_open_video)
 		menuVideo.add_command(label = "Ajout video...", command = self.menu_ajout_video)
 		menuVideo.add_command(label = "Informations", command = self.menu_informations)
-		mainmenu.add_cascade(label = "Video", menu = menuVideo)
+		mainmenu.add_cascade(label = "Vidéo", menu = menuVideo)
 
 		menuAide = tkinter.Menu(mainmenu,tearoff =0)
-		menuAide.add_command(label = "A propos", command = self.menu_about)
+		menuAide.add_command(label = "À propos", command = self.menu_about)
 		mainmenu.add_cascade(label = "Aide", menu = menuAide)
 
 
@@ -157,8 +158,8 @@ class App(object):
 		'''Add a new video and resize all of them
 		'''
 		nb_video = len(self.videos)+1
-		if nb_video > 4:
-			tkMessageBox.showerror("Ouvrir videos", "Impossible d'ajouter une 5ème video.")
+		if nb_video > self.max_videos:
+			tkMessageBox.showerror("Ouvrir videos", "Limitation à %s videos."%self.max_videos)
 		else:
 			video = Pivideo(self.video_frame, app=self, datas_pos = nb_video-1)
 			self.videos.append(video)
@@ -463,7 +464,7 @@ class App(object):
 	def menu_about(self):
 		'''A propos
 		'''
-		tkMessageBox.showinfo("A propos de ", \
+		tkMessageBox.showinfo("À propos de ", \
 				"PIVIMAGE version %s\n"%__version__  + \
 				"License : CeCILL version 2.1\n" + \
 				"https://github.com/fthome/PIVIMAGE" \

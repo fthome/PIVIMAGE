@@ -80,10 +80,10 @@ class Pivideo(tkinter.Frame):
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Ouvrir", command = self.bt_open_video))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Pause", command = self.bt_pause))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Play", command = self.bt_play))
-		self.button_barre.add(tkinter.Button(self.button_barre, text = "Image/image", command = self.bt_image_plus))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Image/Image", command = self.bt_image_plus))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Début", command = self.bt_goto_start))
-		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp début", command = self.bt_trim_start))
-		self.button_barre.add(tkinter.Button(self.button_barre, text = "Supp fin", command = self.bt_trim_end))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Suppr début", command = self.bt_trim_start))
+		self.button_barre.add(tkinter.Button(self.button_barre, text = "Suppr fin", command = self.bt_trim_end))
 		self.button_barre.add(tkinter.Button(self.button_barre, text = "Fermer", command = self.bt_close_video))
 		self.button_barre.grid(sticky = 'nw', padx = 10, pady = 10)
 
@@ -303,7 +303,7 @@ class Pivideo(tkinter.Frame):
 		if self.app.capture != None and self.app.videos[self.app.capture//nb_point] == self and self.video:
 			#Ajoute les données au tableau
 			frame_time = int(round(self.get_relative_time()))
-			self.app.datas.add(frame_time, [0,0]*(self.app.capture) + self.get_coordonnes(evt))
+			self.app.datas.add(frame_time, [None,None]*(self.app.capture) + self.get_coordonnes(evt))
 			#Ajoute une marques
 			self.marques[(frame_time,self.app.capture%nb_point)]=Marque(self, evt.x, evt.y, self.app.capture%nb_point)
 			self.last_capture[self.app.capture%nb_point] = (evt.x, evt.y)
@@ -343,7 +343,7 @@ class Pivideo(tkinter.Frame):
 			self.centre = (evt.x, evt.y)
 			self.draw_coordonnes()
 			for i in range(nb_point):
-				self.app.datas.change_datas(self.datas_pos+i, callback = self.to_polar, col_names = self.get_col_names()[i:i+1])
+				self.app.datas.change_datas(self.datas_pos+i, callback = self.to_polar, col_names = self.get_col_names()[i:i+2])
 			self.app.stop_mode()
 			self.canvas.config(cursor = "")
 
@@ -429,7 +429,7 @@ class Pivideo(tkinter.Frame):
 		'''Update the scale label
 		'''
 		self.ratio_px_mm = ratio_px_mm
-		self.scale.set("Echelle : 1 pixel = %f mm"%(self.ratio_px_mm))
+		self.scale.set("Échelle : 1 pixel = %f mm"%(self.ratio_px_mm))
 
 	def on_coordonnes_change(self):
 		'''Au changement de coordonnés (cartesien - polaire)
@@ -444,7 +444,7 @@ class Pivideo(tkinter.Frame):
 		else: # Si coordonnés cartesien
 			#if self.app.datas.is_empty() or tkMessageBox.askokcancel("Coordonnées cartésiens", "Attention les captures précédentes seront effacées."):
 			for i in range(self.app.nb_point_capture.get()):
-				self.app.datas.change_datas(self.datas_pos+i, callback = self.to_cartesien, col_names = self.get_col_names()[i:i+1])
+				self.app.datas.change_datas(self.datas_pos+i, callback = self.to_cartesien, col_names = self.get_col_names()[i:i+2])
 			self.centre = None
 			self.draw_coordonnes()
 
@@ -489,6 +489,7 @@ class Pivideo(tkinter.Frame):
 					col_names +=  ["X%s"%indice1, "Y%s"%indice1]
 				else:
 					col_names +=  ["X%s-%s"%(indice1, indice2), "Y%s-%s"%(indice1,indice2)]
+		print("get_col_names => %s"%col_names)
 		return col_names
 
 	def get_coordonnes(self, evt):
